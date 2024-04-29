@@ -4,9 +4,9 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Shopping</title>
+<title>Home</title>
 </head>
 <body>
-<h1>Shopping</h1>
+<jsp:include page="Menu.jsp" />  
 </body>
 </html>
