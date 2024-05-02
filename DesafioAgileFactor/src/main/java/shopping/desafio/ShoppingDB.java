@@ -37,13 +37,9 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 				while(result.next()) {
 				
 					Product product = new Product();
-					product.setId(result.getInt("product_id"));
+					product.setId(result.getLong("product_id"));
 					product.setMarket(result.getInt("market_id"));
 					product.setName(result.getString("variant_gid"));
-					product.setAuthor(result.getString("author_gid"));
-					product.setEditor(result.getString("editor_gid"));
-					product.setCreateddate(result.getString("created_dt"));
-					product.setUpdateddate(result.getString("updated_dt"));
 			
 					products.add(product);
 					
@@ -73,16 +69,20 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 			
 			while(result.next()) {
 				
-				product.setId(result.getInt("product_id"));
-				product.setMarket(result.getInt("market_id"));
+				product.setId(result.getLong("product_id"));
+				product.setMarket(result.getLong("market_id"));
 				product.setName(result.getString("variant_gid"));
-				product.setAuthor(result.getString("author_gid"));
-				product.setEditor(result.getString("editor_gid"));
-				product.setCreateddate(result.getString("created_dt"));
-				product.setUpdateddate(result.getString("updated_dt"));
 				product.setPrice(result.getDouble("price_vl"));
 				product.setPriceCurrency(result.getString("currency_cd"));
-				product.setCategories(getCategories("Select * from shp_classification where product_id="+product.getId()+";"));
+		
+				product.setLabels(getLabels("SELECT * "+
+											"FROM shp_label "+
+											"INNER JOIN shp_classification "+
+											"ON shp_label.label_id= shp_classification.label_id "+
+											"INNER JOIN shp_product "+
+											"ON shp_classification.product_id = shp_product.product_id "+
+											"WHERE shp_product.product_id="+product.getId()+";"));
+				return product;
 			}
 			}catch (SQLException e) {
 				
@@ -93,9 +93,31 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 			return product;
 		}
 			
+	public boolean checkSubLabel(String query) throws SQLException{
+		boolean check=false;
+		loadDriver(driver);
+		try (
+				//Connect to database, run the query and keep results
+		
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
+				Statement stmt = conn.createStatement();
+				ResultSet result = stmt.executeQuery(query);
+				
+		){
+		
+		check=(result != null && result.next()) ? true:false;
+		 	
+		} 
+		catch (SQLException e) {
+			
+			System.out.println("Exception connecting to database::"+e.getMessage());
+            e.printStackTrace();
+            
+		}return check;
+	}
 	
-	public List<Categorie> getCategories(String query) throws SQLException{
-		List<Categorie> categories = new ArrayList<Categorie>();
+	public List<Label> getLabels(String query) throws SQLException{
+		List<Label> labels = new ArrayList<Label>();
 		loadDriver(driver);
 		try (
 				//Connect to database, run the query and keep results
@@ -106,10 +128,12 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 				
 		){
 			while(result.next()) {
-				Categorie categorie = new Categorie();
-				categorie.setName(result.getString("classification_st"));
+				Label label = new Label();
+				label.setId(result.getLong("label_id"));
+				label.setName(result.getString("label_nm"));
+				label.setTax(result.getString("label_tp"));
 				
-				categories.add(categorie);
+				labels.add(label);
 			}
 		} 
 		catch (SQLException e) {
@@ -118,7 +142,7 @@ private String driver ="com.mysql.cj.jdbc.Driver";
             e.printStackTrace();
             
 		}
-		return categories;
+		return labels;
 	}
 	
 }

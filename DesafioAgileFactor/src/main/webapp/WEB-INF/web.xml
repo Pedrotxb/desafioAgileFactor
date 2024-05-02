@@ -20,6 +20,6 @@
     <url-pattern>/ProductInfo</url-pattern>
   </servlet-mapping>
   <welcome-file-list>
-  	<welcome-file>Menu.jsp</welcome-file>
+  	<welcome-file>Shopping.jsp</welcome-file>
   </welcome-file-list>
 </web-app>

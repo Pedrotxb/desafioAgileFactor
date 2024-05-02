@@ -16,27 +16,15 @@
 <title><%=product.getName()%></title>
 </head>
 <body>
- <jsp:include page="/Menu.jsp" />
+ </ul>
 	 <div align="center">
         <table border="1" cellpadding="5">
             <caption><h2><%=product.getName()%></h2></caption>
             <tr>
-                <th>Name</th>			<td><%=product.getName()%></td>
-            </tr>
-            <tr>    
-                <th>Author</th>			<td><%=product.getAuthor()%></td> 
-                   </tr>
-            <tr>  
-                <th>Editor</th>			<td><%=product.getEditor()%></td>
-                   </tr>
-            <tr>  
-                <th>Create Date</th>	<td><%=product.getCreateddate()%></td>
+                <th>Nome</th>			<td><%=product.getName()%></td>
             </tr>
             <tr>  
-                <th>Update Date</th>	<td><%=product.getUpdateddate()%></td>
-            </tr>
-            <tr>  
-                <th>Categories</th>			<td><%=product.getCategoriesString()%></td>    
+                <th>Categorias</th>			<td><%=product.getLabelsString()%></td>    
      		</tr>
             <tr>  
                 <th>Price</th>			<td><%=product.getPrice()%></td>

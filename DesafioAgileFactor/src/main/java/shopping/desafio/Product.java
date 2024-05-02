@@ -1,37 +1,34 @@
 package shopping.desafio;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Product {
 	
-	private int market;
-	private int id;
+	private long market;
+	private long id;
 	private String name;
 	private String author;
 	private String editor;
 	private String createddate;
 	private String updateddate;
 	private Price price = new Price();
-    private  List<Categorie> categorie = new ArrayList<Categorie>();
-    ShoppingDB conn = new ShoppingDB();
-  
-    public void setCategories(List<Categorie> categories) {
-    	this.categorie=categories;
+    private  List<Label> labels = new ArrayList<Label>();
+ 
+    public void setLabels(List<Label> labels) {
+    	this.labels=labels;
     }
     
-    public List<Categorie> getCategories(){
-		return this.categorie;	
+    public List<Label> getLabels(){
+		return this.labels;	
     }
-    public String getCategoriesString() {
-    	String categories= "";
-    	for(Categorie cat : categorie) {
-    		categories += cat.getName()+" ";
+    public String getLabelsString() {
+    	String label= "";
+    	for(Label lab : labels) {
+    		label += lab.getName()+" ";
     	}
     	
-    	return categories;
+    	return label;
     }
     
     public double getPriceValue() {
@@ -49,16 +46,16 @@ public class Product {
 		this.price.setCurrency(currency);
 	}
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
-	public int getMarket() {
+	public long getMarket() {
 		return market;
 	}
-	public void setMarket(int market) {
+	public void setMarket(long market) {
 		this.market = market;
 	}
 	public String getName() {
