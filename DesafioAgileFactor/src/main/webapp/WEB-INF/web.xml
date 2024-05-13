@@ -22,4 +22,6 @@
   <welcome-file-list>
   	<welcome-file>Shopping.jsp</welcome-file>
   </welcome-file-list>
+  <session-config>
+  	<session-timeout>120</session-timeout></session-config>
 </web-app>

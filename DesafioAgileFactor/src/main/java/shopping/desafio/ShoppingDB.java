@@ -23,12 +23,91 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 		}
 	};
 	
-	public List<Product> getProductList(String query) throws SQLException{
+	public void manipulateDB(String query) throws SQLException{
 		loadDriver(driver);
-		List<Product> products = new ArrayList<Product>();
 		try (
-				//Connect to database, run the query and keep results
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
+				Statement stmt = conn.createStatement();
+			){
+			int rslt=stmt.executeUpdate(query);
+		} 
+		catch (SQLException e) {
+			
+			System.out.println("Exception connecting to database, manipulateDB method::"+e.getMessage());
+            e.printStackTrace();
+            
+		}
 		
+	}
+	
+
+	public Cart getCart(String query) throws SQLException{
+		loadDriver(driver);
+		Cart cart = new Cart();
+		ArrayList<Integer> itemquantity = new ArrayList<Integer>();
+		try (
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
+				Statement stmt = conn.createStatement();
+				ResultSet result = stmt.executeQuery(query);
+			){
+			while(result.next()) {
+				if(cart.getSession()==null) {
+					cart.setId(result.getLong("order_id"));
+					cart.setSession(result.getString("session_tk"));
+					cart.setCartProducts(getProductList("SELECT prod.product_id,market_id,prod.variant_gid,pc.price_vl,pc.currency_cd "
+							+ "FROM shp_price pc "
+							+ "INNER JOIN shp_product prod "
+							+ "ON prod.product_id=pc.product_id "
+							+ "INNER JOIN shp_order_item orderitm "
+							+ "ON prod.product_id=orderitm.product_id "
+							+ "INNER JOIN shp_order orderr "
+							+ "ON orderitm.order_id=orderr.order_id "
+							+ "WHERE orderr.session_tk='"+cart.getSession()+"';"));
+				}
+				itemquantity.add(result.getInt("item_qt"));
+			}
+			cart.setQuantity(itemquantity);
+		
+				
+		} 
+		catch (SQLException e) {
+			
+			System.out.println("Exception connecting to database, getCart method::"+e.getMessage());
+            e.printStackTrace();
+            
+		}
+		
+		
+		return cart;
+	}
+	
+	public Cart getCartSession(String query) throws SQLException{
+		loadDriver(driver);
+		Cart cartsession = new Cart();
+		try (
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
+				Statement stmt = conn.createStatement();
+				ResultSet result = stmt.executeQuery(query);
+			){
+				if(result.next()) {
+					cartsession.setSession(result.getString("session_tk"));
+					cartsession.setId(result.getLong("order_id"));
+				}
+				
+		} 
+		catch (SQLException e) {
+			
+			System.out.println("Exception connecting to database, getCartSession method::"+e.getMessage());
+            e.printStackTrace();
+            
+		}
+		return cartsession;
+	}
+	
+	public ArrayList<Product> getProductList(String query) throws SQLException{
+		loadDriver(driver);
+		ArrayList<Product> products = new ArrayList<Product>();
+		try (
 				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
 				Statement stmt = conn.createStatement();
 				ResultSet result = stmt.executeQuery(query);
@@ -40,7 +119,17 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 					product.setId(result.getLong("product_id"));
 					product.setMarket(result.getInt("market_id"));
 					product.setName(result.getString("variant_gid"));
-			
+					product.setPrice(result.getDouble("price_vl"));
+					product.setPriceCurrency(result.getString("currency_cd"));
+					product.setLabels(getLabels("SELECT * "+
+							"FROM shp_label "+
+							"INNER JOIN shp_classification "+
+							"ON shp_label.label_id= shp_classification.label_id "+
+							"INNER JOIN shp_product "+
+							"ON shp_classification.product_id = shp_product.product_id "+
+							"WHERE shp_product.product_id="+product.getId()+";"));
+					
+					
 					products.add(product);
 					
 				}
@@ -48,80 +137,18 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 		} 
 		catch (SQLException e) {
 			
-			System.out.println("Exception connecting to database::"+e.getMessage());
+			System.out.println("Exception connecting to database, getProductList method::"+e.getMessage());
             e.printStackTrace();
             
 		}
 		return products;
 	}
-
-
-	public Product getProduct(String query) throws SQLException{
-		loadDriver(driver);
-		Product product = new Product();
-		try (
-				//Connect to database, run the query and keep results
-		
-				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
-				Statement stmt = conn.createStatement();
-				ResultSet result = stmt.executeQuery(query);
-			){
-			
-			while(result.next()) {
-				
-				product.setId(result.getLong("product_id"));
-				product.setMarket(result.getLong("market_id"));
-				product.setName(result.getString("variant_gid"));
-				product.setPrice(result.getDouble("price_vl"));
-				product.setPriceCurrency(result.getString("currency_cd"));
-		
-				product.setLabels(getLabels("SELECT * "+
-											"FROM shp_label "+
-											"INNER JOIN shp_classification "+
-											"ON shp_label.label_id= shp_classification.label_id "+
-											"INNER JOIN shp_product "+
-											"ON shp_classification.product_id = shp_product.product_id "+
-											"WHERE shp_product.product_id="+product.getId()+";"));
-				return product;
-			}
-			}catch (SQLException e) {
-				
-				System.out.println("Exception connecting to database::"+e.getMessage());
-	            e.printStackTrace();
-	            
-			}
-			return product;
-		}
-			
-	public boolean checkSubLabel(String query) throws SQLException{
-		boolean check=false;
-		loadDriver(driver);
-		try (
-				//Connect to database, run the query and keep results
-		
-				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
-				Statement stmt = conn.createStatement();
-				ResultSet result = stmt.executeQuery(query);
-				
-		){
-		
-		check=(result != null && result.next()) ? true:false;
-		 	
-		} 
-		catch (SQLException e) {
-			
-			System.out.println("Exception connecting to database::"+e.getMessage());
-            e.printStackTrace();
-            
-		}return check;
-	}
 	
-	public List<Label> getLabels(String query) throws SQLException{
-		List<Label> labels = new ArrayList<Label>();
+	
+	public ArrayList<Label> getLabels(String query) throws SQLException{
+		ArrayList<Label> labels = new ArrayList<Label>();
 		loadDriver(driver);
 		try (
-				//Connect to database, run the query and keep results
-		
 				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
 				Statement stmt = conn.createStatement();
 				ResultSet result = stmt.executeQuery(query);
@@ -138,7 +165,7 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 		} 
 		catch (SQLException e) {
 			
-			System.out.println("Exception connecting to database::"+e.getMessage());
+			System.out.println("Exception connecting to database, getLabels method::"+e.getMessage());
             e.printStackTrace();
             
 		}

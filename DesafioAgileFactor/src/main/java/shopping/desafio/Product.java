@@ -13,15 +13,17 @@ public class Product {
 	private String createddate;
 	private String updateddate;
 	private Price price = new Price();
-    private  List<Label> labels = new ArrayList<Label>();
+
+    private  ArrayList<Label> labels = new ArrayList<Label>();
  
-    public void setLabels(List<Label> labels) {
+    public void setLabels(ArrayList<Label> labels) {
     	this.labels=labels;
     }
     
-    public List<Label> getLabels(){
+    public ArrayList<Label> getLabels(){
 		return this.labels;	
     }
+    
     public String getLabelsString() {
     	String label= "";
     	for(Label lab : labels) {
@@ -31,13 +33,11 @@ public class Product {
     	return label;
     }
     
-    public double getPriceValue() {
+    public double getPrice() {
 		return price.getPrice();
 	}
-    public String getPrice() {
-    	String price = String.valueOf(getPriceValue());
-    	
-		return price +" "+ this.price.getCurrency();
+    public String getPriceCurrency() {
+		return this.price.getCurrency();
 	}
 	public void setPrice(double price) {
 		this.price.setPrice(price);
@@ -88,5 +88,5 @@ public class Product {
 	public void setUpdateddate(String updateddate) {
 		this.updateddate = updateddate;
 	}
-	
+
 }
