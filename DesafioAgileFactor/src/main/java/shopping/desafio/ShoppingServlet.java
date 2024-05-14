@@ -6,6 +6,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.sql.Connection;
 
@@ -40,126 +42,76 @@ public class ShoppingServlet extends HttpServlet {
 		  ArrayList<Label> labels = new ArrayList<Label>();
 		  Cart cart = new Cart();
 		  Cart cartsession = new Cart();
-		  String query = "";
-		  String session = (String) request.getAttribute("session");
+		  String query = ""; 
 		  ShoppingDB conn= new ShoppingDB();
+		  HttpSession session = request.getSession();
 		  try {
 			  
 			  //Verify session, Add product to cart 
 			  if("yes".equals(request.getParameter("addproduct"))) {
 				  long prodid=Long.parseLong(request.getParameter("prodid"));
 				  int quantity=Integer.parseInt(request.getParameter("quantity"));
-				 
-				  cartsession=conn.getCartSession("SELECT session_tk,order_id FROM shp_order WHERE session_tk='"+session+"';");
-				  
-				//Check cart on db if not creat
-				  if (cartsession.getSession()==null) {
-					  conn.manipulateDB("INSERT INTO shp_order (client_gid,session_tk,order_st,created_dt,updated_dt) "
-					  				 +"VALUES ('me','"+session+"','on',now(),now());");
-					  cartsession=conn.getCartSession("SELECT session_tk,order_id FROM shp_order WHERE session_tk='"+session+"';");
+				  cartsession=conn.getCartSession(session.getId());
+
+				//Check cart on db if not create
+				  if (cartsession.getSession()==null && session.getId()!=null) {
+					  conn.createCart(session.getId());
+					  cartsession=conn.getCartSession(session.getId());
 				  }
 				//Add product to cart
-				  conn.manipulateDB("INSERT INTO shp_order_item (order_id,product_id,unit_cd,item_qt,item_st) "
-			  				     +"VALUES ('"+cartsession.getId()+"','"+request.getParameter("prodid")+"','Kg','"+request.getParameter("quantity")+"','on');");
-				  
-				  //Pass result
-				  //request.setAttribute("productadded","yes");		 
+				  conn.addProducttoCart(cartsession.getId(),
+						  				Long.parseLong(request.getParameter("prodid")),
+						  				Integer.parseInt(request.getParameter("quantity")));	 
 			 }
 			  
 			  if(request.getParameter("filter")!=null && !request.getParameter("filter").contains(";")) {
 				  String filter=request.getParameter("filter");
 				  if("all".equals(filter)) {
-					  //Get products
-					  query="SELECT prod.product_id,prod.market_id,prod.variant_gid,pc.price_vl,pc.currency_cd "
-					  		+ "FROM shp_product prod "
-					  		+ "INNER JOIN shp_price pc "
-					  		+ "ON prod.product_id=pc.product_id;";
+					  //Get all products
+					  products=conn.getProductList();
 					  		
-				  }else if(filter.contains(",")) {
-					  String[] filters=filter.split(",");
-					 
-					  
-					  //Get product list filtered by two labels
-					  query= "SELECT prod.product_id,prod.variant_gid,prod.market_id,pc.price_vl,pc.currency_cd "
-							+"FROM shp_price pc " 
-							+"INNER JOIN shp_product prod "
-							+"ON pc.product_id=prod.product_id "
-							+"INNER JOIN shp_classification classif "
-							+"ON prod.product_id=classif.product_id "
-							+"INNER JOIN shp_label label "
-							+"ON label.label_id=classif.label_id "
-							+"WHERE classif.label_id IN ("+filters[0]+","+filters[1]+") "
-							+"GROUP BY prod.product_id,pc.price_vl,pc.currency_cd "
-							+"HAVING count(*) = 2;";
-	  
-				  }else if(filter.matches("\\d")){
-					  //Get product list filtered by a label
-					  	query="SELECT prod.market_id,prod.product_id,prod.variant_gid,pc.price_vl,pc.currency_cd "
-					  		 +"FROM shp_price pc "
-					  		 +"INNER JOIN shp_product prod "
-					  		 +"ON pc.product_id=prod.product_id "
-					  		 +"INNER JOIN shp_classification classif "
-					  		 +"ON prod.product_id=classif.product_id "
-					  		 +"WHERE classif.label_id="+filter+" "
-					  		 +"GROUP BY prod.product_id,pc.price_vl,pc.currency_cd";
+				  }else if("labels".equals("filter")) {
+					  //ArrayList<Label> filters = new ArrayList<Label>();
+					  //Get product list filtered by labels
+					  //filters = (ArrayList<Label>) session.getAttribute("filters");
 				  }
-				  products = conn.getProductList(query);
 			  }
-			  
 			  //Search product by name
 			  if(request.getParameter("byname")!=null) {
-				  ArrayList<Product> match = new ArrayList<Product>();
-				  products = conn.getProductList("SELECT prod.product_id,prod.market_id,prod.variant_gid,pc.price_vl,pc.currency_cd "
-					  							+ "FROM shp_product prod "
-					  							+ "INNER JOIN shp_price pc "
-					  							+ "ON prod.product_id=pc.product_id;");
-				  		
-				  String name=request.getParameter("byname");
-				  for(Product product : products) {
-					  
-					  if(product.getName().toLowerCase().contains(name.toLowerCase())){
-						  match.add(product);
-					  }
-				  }
-				  
-				  products = match;
+				  products = conn.getProductListbyName(request.getParameter("byname"));
 			  }
 			  
 			  //Update product quantity
 			  if("update".equals(request.getParameter("cart"))){
-				  conn.manipulateDB("UPDATE shp_order_item "
-						  			+" SET item_qt="+request.getParameter("quantity")
-						  			+" WHERE order_id="+request.getParameter("order_id")
-								    +" AND product_id="+request.getParameter("prodid")+";");
+				  conn.updateProduct(Integer.parseInt(request.getParameter("quantity")),
+						  			Long.parseLong(request.getParameter("order_id")),
+						  			Long.parseLong(request.getParameter("prodid")));
 			  }
 			  //Remove product from cart
 			  else if("remove".equals(request.getParameter("cart"))){
-				  conn.manipulateDB("DELETE FROM shp_order_item "
-							      + "WHERE order_id="+request.getParameter("order_id")
-								  + " AND product_id="+request.getParameter("prodid")+";");
+				  conn.removeProduct(Long.parseLong(request.getParameter("order_id")),
+						  			 Long.parseLong(request.getParameter("prodid")));
 			  }
-			  
-			  cart=conn.getCart("SELECT shp_order.session_tk,shp_order.order_id,shp_order_item.item_qt, "
-					         +"shp_order_item.product_id FROM shp_order "
-					         +"INNER JOIN shp_order_item "
-					         +"ON shp_order.order_id=shp_order_item.order_id "
-					         +"WHERE session_tk='"+(String)request.getAttribute("session")+"';");
+			  //Get cart from session
+			  cart=conn.getCart(session.getId());
 			
-			request.setAttribute("cartproducts", cart.getCartProducts());
-			request.setAttribute("productsquantity", cart.getQuantity());		
-			request.setAttribute("order_id", cart.getId());
-			labels = conn.getLabels("SELECT * FROM shp_label");		
+			session.setAttribute("cartproducts", cart.getCartProducts());
+			session.setAttribute("productsquantity", cart.getQuantity());		
+			session.setAttribute("order_id", cart.getId());
+			
+			//Get labels name and id
+			labels = conn.getLabels();		
+
+			session.setAttribute("products", products);
+			session.setAttribute("labels", labels);
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	  
-		request.setAttribute("products", products);
-		request.setAttribute("labels", labels);
+
 		RequestDispatcher rd=request.getRequestDispatcher("Shopping.jsp");
 		rd.forward(request, response);
-		
-		
 	}
 
 	/**
