@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+
 import java.io.IOException;
 import java.sql.Connection;
 
@@ -32,8 +33,8 @@ public class ShoppingServlet extends HttpServlet {
       
     }
       
-
-	/**
+    
+    /**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -60,22 +61,23 @@ public class ShoppingServlet extends HttpServlet {
 				  }
 				//Add product to cart
 				  conn.addProducttoCart(cartsession.getId(),
-						  				Long.parseLong(request.getParameter("prodid")),
-						  				Integer.parseInt(request.getParameter("quantity")));	 
-			 }
+						  Long.parseLong(request.getParameter("prodid")),
+						  Integer.parseInt(request.getParameter("quantity")));	 
+			  	}
+			  
+			 
 			  
 			  if(request.getParameter("filter")!=null && !request.getParameter("filter").contains(";")) {
-				  String filter=request.getParameter("filter");
-				  if("all".equals(filter)) {
-					  //Get all products
-					  products=conn.getProductList();
+				  String filter=request.getParameter("filter");				 			
 					  		
-				  }else if("labels".equals("filter")) {
+			  if("labels".equals("filter")) {
 					  //ArrayList<Label> filters = new ArrayList<Label>();
 					  //Get product list filtered by labels
 					  //filters = (ArrayList<Label>) session.getAttribute("filters");
 				  }
 			  }
+			  
+			  
 			  //Search product by name
 			  if(request.getParameter("byname")!=null) {
 				  products = conn.getProductListbyName(request.getParameter("byname"));
@@ -92,18 +94,21 @@ public class ShoppingServlet extends HttpServlet {
 				  conn.removeProduct(Long.parseLong(request.getParameter("order_id")),
 						  			 Long.parseLong(request.getParameter("prodid")));
 			  }
+			  
+
 			  //Get cart from session
 			  cart=conn.getCart(session.getId());
-			
-			session.setAttribute("cartproducts", cart.getCartProducts());
-			session.setAttribute("productsquantity", cart.getQuantity());		
-			session.setAttribute("order_id", cart.getId());
-			
-			//Get labels name and id
-			labels = conn.getLabels();		
-
-			session.setAttribute("products", products);
-			session.setAttribute("labels", labels);
+			  
+			  //Get labels name and id
+			  labels = conn.getLabels();	
+			  				  
+			  //Save all info in session 
+ 
+			  session.setAttribute("cartproducts", cart.getCartProducts());
+			  session.setAttribute("productsquantity", cart.getQuantity());		
+			  session.setAttribute("order_id", cart.getId());
+			  session.setAttribute("products", products);
+			  session.setAttribute("labels", labels);
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -121,6 +126,6 @@ public class ShoppingServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
-
-
+	
+	
 }

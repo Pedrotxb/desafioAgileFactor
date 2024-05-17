@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.catalina.filters.AddDefaultCharsetFilter;
+import org.json.JSONArray;
+
 
 public class ShoppingDB {
 private String driver ="com.mysql.cj.jdbc.Driver";
@@ -300,6 +302,8 @@ private String driver ="com.mysql.cj.jdbc.Driver";
 		return products;
 	}
 	
+	
+	
 	public ArrayList<Label> getProductLabels(long product_id) throws SQLException{
 		ArrayList<Label> labels = new ArrayList<Label>();
 		loadDriver(driver);
@@ -362,6 +366,46 @@ private String driver ="com.mysql.cj.jdbc.Driver";
             
 		}
 		return labels;
+	}
+	
+	public JSONArray searchList(String type, String search) throws SQLException{
+		loadDriver(driver);
+		String query="";
+		JSONArray json=new JSONArray();
+		
+		if("label"==type) {
+			query="Select label_nm from shp_label "+
+				  "WHERE label_nm LIKE ?;";	
+		}else {
+			query="Select variant_gid from shp_product "+
+				  "WHERE variant_gid LIKE ?;";
+		}
+		
+		try (
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","admin");
+				PreparedStatement stmt = conn.prepareStatement(query);
+			){
+			stmt.setString(1, "%"+search+"%");
+			ResultSet result = stmt.executeQuery();
+			
+			while(result.next()) {
+				if("label".equals(type)) {
+					json.put(result.getString("label_nm"));
+				}else {
+					json.put(result.getString("variant_gid"));				
+				}
+			}
+			result.close();
+				
+		} 
+		catch (SQLException e) {
+			
+			System.out.println("Exception connecting to database, getProductList method::"+e.getMessage());
+            e.printStackTrace();
+            
+		}
+
+		return json;
 	}
 	
 }

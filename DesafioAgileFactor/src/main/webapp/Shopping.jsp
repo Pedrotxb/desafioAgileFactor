@@ -22,8 +22,12 @@
 <title>Shopping</title>
         
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
-    <script type="text/javascript">
-    
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+ <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    <script >
+   
     	   function updateproduct(id) {
     		   $.ajax({
                    type: "post",
@@ -67,15 +71,62 @@
       	}
       	function increment(input) {
       	      document.getElementById(input).stepUp();
-      	   }
-      	   function decrement(input) {
+      	}
+        function decrement(input) {
       	      document.getElementById(input).stepDown();
-      	   }
-      	  
+      	}
+        $(function()
+                {
+                 $('#searchlabel').autocomplete(
+                 {
+                 source:function(request,response)
+                 {
+                 //Fetch data
+                 $.ajax({
+                     url:"AutocompleteServlet",
+                     method:"post",
+                     dataType:'json',
+                     data:{searchlabel:request.term},
+                     success:function(data)
+                     {
+                         response(data);
+                     }
+                 });
+                 }
+                 });   
+                }); 
+        
+        $(function()
+                {
+                 $('#searchproduct').autocomplete(
+                 {
+                 source:function(request,response)
+                 {
+                 //Fetch data
+                 $.ajax({
+                     url:"AutocompleteServlet",
+                     method:"post",
+                     dataType:'json',
+                     data:{searchproduct:request.term},
+                     success:function(data)
+                     {
+                         response(data);
+                     }
+                 });
+                 },minLength: 0,
+         		scroll: true,
+                 select: function(event, ui) {   
+         			console.log(ui.item.value);
+        			if(ui.item.value != ""){
+        			    location.href="Shopping?byname="+ui.item.value;
+        			}
+        		}
+                 
+                 });   
+                }); 
         
     </script>
 
-</head>
 <body>
 	<ul id="menu" class="menu">
 
@@ -83,26 +134,26 @@
 		<li class="dropdown"><a class="dropbtn">Labels</a>
 			<ul class="dropdown-content">
 				<li>
-					<form class="searchlabel" action="Shopping" method="post">
-						<input type="text" id="searchByName" name="byname"
-							onkeyup="searchByName()" placeholder="Procurar label..">
+					<form action="Shopping" method="post">
+						<input type="text"  id="searchlabel"  placeholder="Procurar label..">
 					</form>
-
+					
 				</li>
 				<%for(Label label : labels){%>
 				<li class="dropdown"><a
 					href="Shopping?filter=<%=label.getId()%>"><%=label.getName()%></a></li>
 				<%}%>
 			</ul></li>
-			
-			
-		<li class="home"><a href="Shopping?filter=all"> Produtos</a></li>
-		<form class="search" action="Shopping" method="post">
-	
-			<input type="text" id="searchByName" name="byname"
-				onkeyup="searchByName()" placeholder="Procurar produto..">
-			
-		</form>
+		
+		<li class="dropdown"><a class="dropbtn">Produtos</a>
+			<ul class="dropdown-content">
+				<li>
+					<form action="Shopping" method="post">
+						<input type="text" id="searchproduct"  name="byname" placeholder="Procurar produto..">
+					</form>
+
+				</li>
+			</ul></li>
 		
 		<li class="cart"><a id="cart">Carrinho</a></li>
 	</ul>
@@ -227,6 +278,6 @@
                     }
                 }
             );
-        </script>	
+    </script>	
 </body>
 </html>
