@@ -1,14 +1,12 @@
 package shopping.desafio;
 
 import java.util.ArrayList;
-import java.util.List;
-
 public class Cart {
 	private long order_id;
 	private String session;
 	private ArrayList<Integer> quantity;
 	private  ArrayList<Product> products = new ArrayList<Product>();
-	
+
 	public long getId() {
 		return order_id;
 	}
@@ -27,12 +25,12 @@ public class Cart {
 	public void setQuantity(ArrayList<Integer> itemquantity) {
 		this.quantity = itemquantity;
 	}
-	
+
 	public ArrayList<Product> getCartProducts() {
 		return products;
 	}
 	public void setCartProducts(ArrayList<Product> products) {
 		this.products = products;
 	}
-	
+
 }
