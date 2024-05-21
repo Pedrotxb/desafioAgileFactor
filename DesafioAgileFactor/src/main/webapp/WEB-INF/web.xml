@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jakartaee" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd" id="WebApp_ID" version="6.0">
   <display-name>DesafioAgileFactor</display-name>
+  <filter>
+    <filter-name>RequestFilter</filter-name>
+    <filter-class>shopping.desafio.RequestFilter</filter-class>
+</filter>
+
+<filter-mapping>
+    <filter-name>RequestFilter</filter-name>
+    <url-pattern>/Shopping</url-pattern>
+</filter-mapping>
+<resource-ref> 
+     <description>Datasource for my db</description> 
+     <res-ref-name>jdbc/mydb</res-ref-name> 
+     <res-type>javax.sql.DataSource</res-type> 
+     <res-auth>Container</res-auth> 
+</resource-ref>
   <servlet>
     <servlet-name>Shopping</servlet-name>
     <servlet-class>shopping.desafio.ShoppingServlet</servlet-class>

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class ShoppingServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Connection con	= null;
-	final ShoppingDB conn= new ShoppingDB();
+	ShoppingDB conn= new ShoppingDB();
 	HttpSession session;
 	Cart cart ;
 	ArrayList<Label> labels = new ArrayList <Label>();
@@ -39,6 +39,7 @@ public class ShoppingServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+		
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		this.session = request.getSession();
 		getCart();	
@@ -88,7 +89,7 @@ public class ShoppingServlet extends HttpServlet {
 	private void getCart() {
 		try {
 			//Get cart from session
-			this.cart=conn.getCart(session.getId());
+			this.cart=conn.getCart();
 			session.setAttribute("cartproducts", cart.getCartProducts());
 			session.setAttribute("productsquantity", cart.getQuantity());		
 			session.setAttribute("order_id", cart.getId());
@@ -102,7 +103,8 @@ public class ShoppingServlet extends HttpServlet {
 	private void getProductsByName(String name) {
 		try {
 			labels.clear();
-			products = conn.getProductListbyName(name);
+			session.setAttribute("byname", name);
+			products = conn.getProductListbyName();
 			session.setAttribute("products", products);
 		}
 		catch (SQLException e) {
@@ -112,26 +114,14 @@ public class ShoppingServlet extends HttpServlet {
 
 	}
 
-	private void searchProductsByLabel(Long label_id) {
+	private void getProducts() {
 		try {
 			products.clear();
-			products = conn.getProductsByLabel(label_id);
+			products = conn.getProducts();
 			session.setAttribute("products", products);	
 		}	
 		catch (SQLException e) {
-			System.out.println("Exception connecting to database, searchProductsByLabel method in ShoppingServlet::"+e.getMessage());
-			e.printStackTrace();
-		}
-	}
-	
-	private void searchProductsByLabels(ArrayList<Label> labels) {
-		try {
-			products.clear();
-			products = conn.getProductsByLabels(labels);
-			session.setAttribute("products", products);	
-		}	
-		catch (SQLException e) {
-			System.out.println("Exception connecting to database, searchProductsByLabels method in ShoppingServlet::"+e.getMessage());
+			System.out.println("Exception connecting to database, sgetProducts method in ShoppingServlet::"+e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -140,8 +130,8 @@ public class ShoppingServlet extends HttpServlet {
 		try {
 			//Check cart on db if null create
 			if (cart.getSession()==null) {
-				conn.createCart(session.getId());
-				this.cart=conn.getCartSession(session.getId());
+				conn.createCart();
+				this.cart=conn.getCartSession();
 			}	  
 			//Add product to cart
 			manageCart("add",product_id,quantity,cart.getId());
@@ -179,14 +169,9 @@ public class ShoppingServlet extends HttpServlet {
 			Label label = conn.getLabel(name);
 			if("add".equals(manage)) {
 				labels.add(label);
-				if(labels.size()<2)
-					//Search products by label
-					searchProductsByLabel(label.getId());
-				else {
-					//Search products by label list
-					searchProductsByLabels(labels);
-				}
-			
+				session.setAttribute("labels", labels);
+				getProducts();
+
 			}else {
 				//Remove label!!!
 				for(int i=0;i<labels.size();i++) {
@@ -197,15 +182,13 @@ public class ShoppingServlet extends HttpServlet {
 					//Remove products from removed label
 					products.clear();
 					session.setAttribute("products", products);	
-				}else if(labels.size()<2) {
-					//Search products from remaining label
-					searchProductsByLabel(labels.get(0).getId());
-				}else {
-					//Search products from remaining label list
-					searchProductsByLabels(labels);
+					
+				}else{
+					session.setAttribute("labels", labels);
+					getProducts();
 				}
 			}
-			session.setAttribute("labels", labels);
+			
 		}	
 		catch (SQLException e) {
 			System.out.println("Exception connecting to database, manageLabels method in ShoppingServlet::"+e.getMessage());

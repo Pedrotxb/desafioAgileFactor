@@ -1,0 +1,9 @@
+<Context>
+    <Resource name="jdbc/mydb"
+              global="jdbc/mydb" 
+              type="javax.sql.DataSource" maxActive="50" maxIdle="30" 
+              maxWait="10000" 
+              username="root" password="admin" auth="Container" 
+              driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://localhost:3306/shopping"/>
+</Context>
