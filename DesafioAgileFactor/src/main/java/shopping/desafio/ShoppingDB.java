@@ -224,9 +224,9 @@ public class ShoppingDB {
 
 	private String listToArray(ArrayList<Label> labels) {			
 		String str ="";
-		int size = 0;
+		int size = 1;
 		for(Label label : labels) {			
-			if(size<labels.size()-1)
+			if(size<labels.size())
 				str+="'"+str.valueOf(label.getId())+"',";
 			else
 				str+="'"+str.valueOf(label.getId())+"'";

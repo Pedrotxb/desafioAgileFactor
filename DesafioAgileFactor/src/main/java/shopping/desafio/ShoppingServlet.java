@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -18,7 +17,6 @@ import java.util.ArrayList;
 
 public class ShoppingServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	Connection con	= null;
 	ShoppingDB conn= new ShoppingDB();
 	HttpSession session;
 	Cart cart ;

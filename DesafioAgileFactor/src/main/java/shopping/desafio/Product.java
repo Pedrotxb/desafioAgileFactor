@@ -9,15 +9,6 @@ public class Product {
 	private String name;
 	private Price price = new Price();
 	private  ArrayList<Label> labels = new ArrayList<Label>();
-
-	
-	public boolean containLabel(long label_id) {
-		for(Label label : this.labels) {
-			if(label.getId()==label_id)
-				return true;
-		}
-		return false;
-	}
 	
 	public void setLabels(ArrayList<Label> labels) {
 		this.labels=labels;
