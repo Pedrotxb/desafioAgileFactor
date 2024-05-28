@@ -1,14 +1,18 @@
 package shopping.desafio;
 
+import java.math.BigDecimal;
+
 public class Price {
 
-	private double price;
+	private BigDecimal price;
+	
+	
 	private String currency;
 
-	public double getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
-	public void setPrice(double price) {
+	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
 

@@ -203,7 +203,7 @@ public class ShoppingDB {
 				product.setId(result.getLong("product_id"));
 				product.setMarket(result.getInt("market_id"));
 				product.setName(result.getString("variant_gid"));
-				product.setPrice(result.getDouble("price_vl"));
+				product.setPrice(result.getBigDecimal("price_vl"));
 				product.setPriceCurrency(result.getString("currency_cd"));
 				product.setLabels(getProductLabels(product.getId()));
 
@@ -262,7 +262,7 @@ public class ShoppingDB {
 				Product product = new Product();
 				product.setId(result.getLong("product_id"));
 				product.setName(result.getString("variant_gid"));
-				product.setPrice(result.getDouble("price_vl"));
+				product.setPrice(result.getBigDecimal("price_vl"));
 				product.setPriceCurrency(result.getString("currency_cd"));
 				product.setLabels(getProductLabels(product.getId()));
 
@@ -305,7 +305,7 @@ public class ShoppingDB {
 				product.setId(result.getLong("product_id"));
 				product.setMarket(result.getInt("market_id"));
 				product.setName(result.getString("variant_gid"));
-				product.setPrice(result.getDouble("price_vl"));
+				product.setPrice(result.getBigDecimal("price_vl"));
 				product.setPriceCurrency(result.getString("currency_cd"));
 				product.setLabels(getProductLabels(product.getId()));
 

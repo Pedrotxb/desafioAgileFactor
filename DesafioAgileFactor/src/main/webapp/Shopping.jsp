@@ -1,17 +1,14 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="UTF-8"%>
 <%@page import="shopping.desafio.*"%>
 <%@page import="java.util.ArrayList"%>
+<%@page import="java.math.BigDecimal"%>
 
-
-<%
-// retrieve your list from the request, with casting 
-
-ArrayList<Integer> productquantity = (ArrayList<Integer>) session.getAttribute("productsquantity");
-ArrayList<Product> products = (ArrayList<Product>) session.getAttribute("products");
-ArrayList<Label> labels = (ArrayList<Label>) session.getAttribute("labels");
-long order_id = (long) session.getAttribute("order_id");
-%>
+<c:set var = "productquantity" value ="${sessionScope.productsquantity}"/>
+<c:set var = "products" value ="${sessionScope.products}"/>
+<c:set var = "labels" value ="${sessionScope.labels}"/>
+<c:set var = "order_id" value ="${sessionScope.order_id}"/>
 
 <!DOCTYPE html>
 <html>
@@ -20,8 +17,7 @@ long order_id = (long) session.getAttribute("order_id");
 <meta charset="UTF-8">
 <title>Shopping</title>
 
-<script type="text/javascript"
-	src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
 
@@ -31,7 +27,6 @@ long order_id = (long) session.getAttribute("order_id");
 <script type="text/javascript" src="Script.js"></script>
 
 <body>
-	
 	<ul id="menu" class="menu">
 
 		<li class="home"><a href="Shopping">Home</a></li>
@@ -42,19 +37,15 @@ long order_id = (long) session.getAttribute("order_id");
 						<input type="text" id="searchlabel" placeholder="Procurar label..">
 					</form>
 
-				</li>				
-				<%
-				if (labels != null) {
-					for (Label label : labels) {
-				%>
+				</li>
+				<c:if test = "${labels != null}">				
+					<c:forEach var="label" items="${labels}">
 					<p>
-						<label><%=label.getName()%></label>  
-						<a style="color:red;display:inline-block;" href="Shopping?filter=remove&&labelname=<%=label.getName()%>">&#10006;</a>
-					</p>
-				<%
-					}
-				}
-				%>
+						<label>${label.name}</label>  
+						<a style="color:red;display:inline-block;" href="Shopping?filter=remove&&labelname=${label.name}">&#10006;</a>
+					</p>	
+					</c:forEach>
+				</c:if>
 			</ul></li>
 
 		<li class="dropdown"><a class="dropbtn">Produtos</a>
@@ -74,52 +65,48 @@ long order_id = (long) session.getAttribute("order_id");
 	<div align="center">
 
 		<ul id="product">
-			<%
-			if (products != null) {
-				for (Product product : products) {
-			%>
-			<li><a onclick="openForm('<%=product.getName()%>')"><%=product.getName()%></a></li>
-			<div class="form-popup" id="<%=product.getName()%>">
+			<c:if test ="${products != null}">
+				<c:forEach var = "product" items = "${products}">
+			<li><a onclick="openForm('${product.name}')">${product.name}</a></li>
+			<div class="form-popup" id="${product.name}">
 				<form class="form-container" action="Shopping" method="post">
 					<input type="hidden" name="addproduct" value="yes"> <input
-						type="hidden" name="prodid" value="<%=product.getId()%>">
+						type="hidden" name="prodid" value="${product.id}">
 					<table border="1" cellpadding="5">
 						<caption>
-							<h2><%=product.getName()%></h2>
+							<h2>${product.name}</h2>
 						</caption>
 						<tr>
 							<th>Nome</th>
-							<td><%=product.getName()%></td>
+							<td>${product.name}</td>
 						</tr>
 						<tr>
 							<th>Categorias</th>
-							<td><%=product.getLabelsString()%></td>
+							<td>${product.getLabelsString()}</td>
 						</tr>
 						<tr>
 							<th padding:="5">Price</th>
-							<td><%=product.getPrice()%></td>
+							<td>${product.getPrice().setScale(2)}</td>
 						</tr>
 
 					</table>
 					<p></p>
 					<div class="quantity">
 						<button type="button" class="minus"
-							onclick="decrement('Input=<%=product.getName()%>')">&minus;</button>
-						<input id="Input=<%=product.getName()%>" name="quantity"
+							onclick="decrement('Input=${product.getName()}')">&minus;</button>
+						<input id="Input=${product.getName()}" name="quantity"
 							type="number" class="input-box" value="1" min="1" max="10">
 						<button type="button" class="plus"
-							onclick="increment('Input=<%=product.getName()%>')">&plus;</button>
+							onclick="increment('Input=${product.getName()}')">&plus;</button>
 					</div>
 					<p></p>
 					<button type="submit" class="btn">Adicionar ao Carrinho</button>
 					<button type="button" class="btn cancel"
-						onclick="closeForm('<%=product.getName()%>')">Fechar</button>
+						onclick="closeForm('${product.getName()}')">Fechar</button>
 				</form>
 			</div>
-			<%
-				}
-			}
-			%>
+				</c:forEach>
+			</c:if>
 		</ul>
 	</div>
 
@@ -129,54 +116,45 @@ long order_id = (long) session.getAttribute("order_id");
 				<a id="closePopup">&#10006;</a>
 			</div>
 			<h1>Seu carrinho</h1>
-			<%
-			if (session.getAttribute("cartproducts") != null) {
-				ArrayList<Product> cartproducts = (ArrayList<Product>) session.getAttribute("cartproducts");
-				if (cartproducts.size() == 0) {
-			%>
-			Não tem produtos no seu carrinho!!!
-			<%
-				}
-			double total = 0.0;
-				for (int i = 0; i < cartproducts.size(); i++) {
-					Product product = cartproducts.get(i);
-					int quantity = productquantity.get(i);
-			%>
-
+			<c:if test ="${sessionScope.cartproducts != null}">
+				<c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
+				<c:if test ="${cartproducts.size()==0}">			
+					<c:out value="Não tem produtos no seu carrinho!!!" /> 
+				</c:if>
+			<c:set var = "total" value ="${BigDecimal.ZERO}"/>
+				<c:forEach var = "i" begin = "1" end ="${cartproducts.size()}">
+					<c:set var = "product" value ="${cartproducts[i-1]}"/>
+					<c:set var = "quantity" value ="${productquantity[i-1]}"/>
 			<form action="Shopping" method="post">
-				<input id="prodid<%=i%>r" type="hidden" type="number"
-					value="<%=product.getId()%>"> <input id="order_id<%=i%>r"
-					type="hidden" type="number" value="<%=order_id%>">
+				<input id="prodid${i}r" type="hidden" type="number"
+					value="${product.id}"> <input id="order_id${i}r"
+					type="hidden" type="number" value="${order_id}">
 				<div class="cart-align">
-					Nome:<%=product.getName()%>
-					<br> Preço:<%=product.getPrice()%><%=product.getPriceCurrency()%>
-					<br> Total:<%=product.getPrice() * quantity%><%=product.getPriceCurrency()%>
+					Nome:${product.name}
+					<br> Preço:${product.getPrice().setScale(2)}${product.getPriceCurrency()}
+					<br> Total:${product.getPrice().multiply(quantity).setScale(2)}${product.getPriceCurrency()}
 				</div>
-				<input type="button" onclick="removeproduct('<%=i%>r')"
+				<input type="button" onclick="removeproduct('${i}r')"
 					value="&#10006;" />
 			</form>
 			<br> <br>
 			<form action="Shopping" method="post">
 				<div class="cart-align">
-					<input id="quantity<%=i%>u" type="number" value="<%=quantity%>"
-						min="1" max="20"> <input id="prodid<%=i%>u" type="hidden"
-						value="<%=product.getId()%>"> <input id="order_id<%=i%>u"
-						type="hidden" value="<%=order_id%>"> <input type="button"
-						onclick="updateproduct('<%=i%>u')" value="Atualizar">
+					<input id="quantity${i}u" type="number" value="${quantity}"
+						min="1" max="20"> <input id="prodid${i}u" type="hidden"
+						value="${product.getId()}"> <input id="order_id${i}u"
+						type="hidden" value="${order_id}"> <input type="button"
+						onclick="updateproduct('${i}u')" value="Atualizar">
 				</div>
 			</form>
 			<br> <br>
-
-			<%
-					total += product.getPrice() * quantity;
-					if (cartproducts.size() - 1 == i) {
-						%>Total Carrinho:<%=total%><%=product.getPriceCurrency()%>
-					<%
-					}
-				}
-			}
-			%>
-
+			<c:set var="total" value="${total=total.add(product.getPrice().multiply(quantity)).setScale(2)}"/>
+			<c:if test ="${cartproducts.size() == i}">
+				Total Carrinho:${total}${product.getPriceCurrency()}
+			</c:if>
+			</c:forEach>
+			</c:if>
+			
 		</div>
 	</div>
 </body>

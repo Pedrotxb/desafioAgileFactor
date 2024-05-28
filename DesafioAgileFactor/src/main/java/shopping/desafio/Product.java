@@ -1,5 +1,6 @@
 package shopping.desafio;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class Product {
@@ -26,13 +27,13 @@ public class Product {
 		return label;
 	}
 
-	public double getPrice() {
+	public BigDecimal getPrice() {
 		return price.getPrice();
 	}
 	public String getPriceCurrency() {
 		return this.price.getCurrency();
 	}
-	public void setPrice(double price) {
+	public void setPrice(BigDecimal price) {
 		this.price.setPrice(price);
 	}
 	public void setPriceCurrency(String currency) {
