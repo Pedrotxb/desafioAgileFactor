@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class ShoppingServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	ShoppingDB conn= new ShoppingDB();
+	ShoppingDB db= new ShoppingDB();
 	HttpSession session;
 	Cart cart ;
 	ArrayList<Label> labels = new ArrayList <Label>();
@@ -87,7 +87,7 @@ public class ShoppingServlet extends HttpServlet {
 	private void getCart() {
 		try {
 			//Get cart from session
-			this.cart=conn.getCart();
+			this.cart=db.getCart();
 			session.setAttribute("cartproducts", cart.getCartProducts());
 			session.setAttribute("productsquantity", cart.getQuantity());		
 			session.setAttribute("order_id", cart.getId());
@@ -102,7 +102,7 @@ public class ShoppingServlet extends HttpServlet {
 		try {
 			labels.clear();
 			session.setAttribute("byname", name);
-			products = conn.getProductListbyName();
+			products = db.getProductListbyName();
 			session.setAttribute("products", products);
 		}
 		catch (SQLException e) {
@@ -115,7 +115,7 @@ public class ShoppingServlet extends HttpServlet {
 	private void getProducts() {
 		try {
 			products.clear();
-			products = conn.getProducts();
+			products = db.getProducts();
 			session.setAttribute("products", products);	
 		}	
 		catch (SQLException e) {
@@ -128,8 +128,8 @@ public class ShoppingServlet extends HttpServlet {
 		try {
 			//Check cart on db if null create
 			if (cart.getSession()==null) {
-				conn.createCart();
-				this.cart=conn.getCartSession();
+				db.createCart();
+				this.cart=db.getCartSession();
 			}	  
 			//Add product to cart
 			manageCart("add",product_id,quantity,cart.getId());
@@ -146,10 +146,17 @@ public class ShoppingServlet extends HttpServlet {
 
 	private void manageCart(String manage, long product_id, int quantity, long order_id) {
 		if("update".equals(manage)){
-			conn.updateProduct(quantity,order_id,product_id);
+			try {
+				db.updateProduct(quantity,order_id,product_id);
+			}
+			catch (SQLException e) {
+				System.out.println("Exception connecting to database, manageCart method in ShoppingServlet::"+e.getMessage());
+				e.printStackTrace();
+			}
+		
 		}else{
 			try {
-				conn.addProducttoCart(order_id,product_id,quantity);	
+				db.addProducttoCart(order_id,product_id,quantity);	
 			}
 			catch (SQLException e) {
 				System.out.println("Exception connecting to database, manageCart method in ShoppingServlet::"+e.getMessage());
@@ -159,12 +166,18 @@ public class ShoppingServlet extends HttpServlet {
 	}
 
 	private void manageCart(long product_id, long order_id) {
-		conn.removeProduct(order_id,product_id);
+		try {
+			db.removeProduct(order_id,product_id);
+		}
+		catch (SQLException e) {
+			System.out.println("Exception connecting to database, manageCart method in ShoppingServlet::"+e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
 	private void manageLabels(String manage, String name) {
 		try {
-			Label label = conn.getLabel(name);
+			Label label = db.getLabel(name);
 			if("add".equals(manage)) {
 				labels.add(label);
 				session.setAttribute("labels", labels);

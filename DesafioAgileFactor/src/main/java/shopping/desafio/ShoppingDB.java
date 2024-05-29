@@ -20,106 +20,119 @@ public class ShoppingDB {
         try {
             this.context = new InitialContext();
             this.datasource = (DataSource) context.lookup("java:comp/env/jdbc/mydb");
+            
         } catch (Exception e) {
         	System.out.println("Exception in ShoppingDB main::"+e.getMessage());
 			e.printStackTrace();
-        }
-
+        }	
     }
 	
-
 	public void createCart() throws SQLException{
-
-		String query = "INSERT INTO shp_order (client_gid,session_tk,order_st,created_dt,updated_dt) "
-				+"VALUES ('me',?,'on',now(),now());";
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(false);
+		
+		String query ="INSERT INTO shp_order (client_gid,session_tk,order_st,created_dt,updated_dt) "
+				     +"VALUES ('me',?,'on',now(),now()); ";
+				
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+			){		
 			stmt.setString(1, session.getId());
 			stmt.executeUpdate();
+			con.commit();	
 		} 
 		catch (SQLException e) {
-
 			System.out.println("Exception connecting to database, createCart method::"+e.getMessage());
 			e.printStackTrace();
-
+			con.rollback();
 		}
-
 	}
 
 	public void addProducttoCart(long order_id, long product_id, int quantity) throws SQLException{
-		
-		String query = "INSERT INTO shp_order_item (order_id,product_id,unit_cd,item_qt,item_st) "
-				+"VALUES (?,?,'Kg',?,'on')"
-				+"ON duplicate key UPDATE item_qt= item_qt + VALUES(item_qt);";
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(false);
+		String query ="INSERT INTO shp_order_item (order_id,product_id,unit_cd,item_qt,item_st) "
+				     +"VALUES (?,?,'Kg',?,'on')"
+				     +"ON duplicate key UPDATE item_qt= item_qt + VALUES(item_qt); ";
+				
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+			){
 			stmt.setLong(1, order_id);
 			stmt.setLong(2, product_id);
 			stmt.setInt(3, quantity);
 			stmt.executeUpdate();
+			con.commit();
 		} 
 		catch (SQLException e) {
 
 			System.out.println("Exception connecting to database, addProducttoCart method::"+e.getMessage());
 			e.printStackTrace();
-
+			con.rollback();
 		}
-
 	}
 
-	public void updateProduct(int quantity, long order_id, long product_id) {
-
+	public void updateProduct(int quantity, long order_id, long product_id) throws SQLException {
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(false);
 		String query="UPDATE shp_order_item "
-				+" SET item_qt=?"
-				+" WHERE order_id=?"
-				+" AND product_id=?;";
+					+"SET item_qt=? "
+					+"WHERE order_id=? "
+					+"AND product_id=?; ";
+			
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+			){
 			stmt.setInt(1, quantity);
 			stmt.setLong(2, order_id);
 			stmt.setLong(3, product_id);
 			stmt.executeUpdate();
-
+			con.commit();
 		} 
 		catch (SQLException e) {
 
 			System.out.println("Exception connecting to database, updateProduct method::"+e.getMessage());
 			e.printStackTrace();
-
+			con.rollback();
 		}
 	}
 
-	public void removeProduct(long order_id, long product_id) {
-
+	public void removeProduct(long order_id, long product_id) throws SQLException {
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(false);
 		String query="DELETE FROM shp_order_item "
-				+ "WHERE order_id=? "
-				+ "AND product_id=?;";
+					+"WHERE order_id=? "
+					+"AND product_id=?; ";
+				
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+			){
 			stmt.setLong(1, order_id);
 			stmt.setLong(2, product_id);
 			stmt.executeUpdate();
-
+			con.commit();
 		} 
 		catch (SQLException e) {
 
 			System.out.println("Exception connecting to database, removeProduct method::"+e.getMessage());
 			e.printStackTrace();
-
+			con.rollback();
 		}
 	}
 
 	public Cart getCart() throws SQLException{
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
+		
 	   	this.session=RequestFilter.getSession();
 		Cart cart = new Cart();
 		ArrayList<Integer> itemquantity = new ArrayList<Integer>();
@@ -130,13 +143,13 @@ public class ShoppingDB {
 				+"WHERE session_tk=?;";
 
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+			){
 			stmt.setString(1,this.session.getId());
 			ResultSet result=stmt.executeQuery();
-
+			con.commit();
+			
 			while(result.next()) {
 				if(cart.getSession()==null) {
 					cart.setId(result.getLong("order_id"));
@@ -147,33 +160,38 @@ public class ShoppingDB {
 			}
 			cart.setQuantity(itemquantity);
 			result.close();
-
 		} 
 		catch (SQLException e) {
 
 			System.out.println("Exception connecting to database, getCart method::"+e.getMessage());
 			e.printStackTrace();
-
+		
 		}
 		return cart;
 	}
 
 	public Cart getCartSession() throws SQLException{
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
 		
 		String query ="SELECT order_id,session_tk FROM shp_order WHERE session_tk=?;";
 		Cart cartsession = new Cart(); 
+		
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+				
+			){
 			stmt.setString(1, session.getId());
 			ResultSet result = stmt.executeQuery();
+			con.commit();
+			
 			if(result.next()) {
 				cartsession.setId(result.getLong("order_id"));
 				cartsession.setSession(result.getString("session_tk"));
 			}
-			result.close();	
+			result.close();
 		} 
 		catch (SQLException e) {
 
@@ -185,18 +203,25 @@ public class ShoppingDB {
 	}
 
 	public ArrayList<Product> getProductListbyName() throws SQLException{
-	
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
+		
 		ArrayList<Product> products = new ArrayList<Product>();
 		String query = "Select * from shp_product product "+
 				"INNER JOIN shp_price price "+
 				"ON product.product_id=price.product_id "+
 				"WHERE product.variant_gid LIKE ?;";
+		
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);				
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+				
+			){
 			stmt.setString(1, "%"+session.getAttribute("byname")+"%");
 			ResultSet result = stmt.executeQuery();
+			con.commit();
+			
 			while(result.next()) {
 
 				Product product = new Product();
@@ -208,10 +233,8 @@ public class ShoppingDB {
 				product.setLabels(getProductLabels(product.getId()));
 
 				products.add(product);
-
 			}
 			result.close();
-
 		} 
 		catch (SQLException e) {
 
@@ -236,7 +259,10 @@ public class ShoppingDB {
 		return str;
 	}
 	public ArrayList<Product> getProducts() throws SQLException{
-	
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
+		
 		String ids = listToArray((ArrayList<Label>) session.getAttribute("labels"));
 		ArrayList<Product> products = new ArrayList<Product>();
 		String query ="SELECT DISTINCT prod.product_id,prod.variant_gid,price.price_vl,price.currency_cd "+
@@ -250,13 +276,16 @@ public class ShoppingDB {
 				      "WHERE lab.label_id IN ("+ids+") "+
 				      "GROUP BY  prod.product_id,price.price_vl,price.currency_cd "+
 				      "HAVING COUNT(lab.label_id) =? ;";
+		
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);				
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
 			
+			){
 			stmt.setInt(1, ((ArrayList<Label>) session.getAttribute("labels")).size());
 			ResultSet result = stmt.executeQuery();
+			con.commit();
+			
 			while(result.next()) {
 
 				Product product = new Product();
@@ -267,7 +296,6 @@ public class ShoppingDB {
 				product.setLabels(getProductLabels(product.getId()));
 
 				products.add(product);
-
 			}
 			result.close();
 		} 
@@ -282,7 +310,10 @@ public class ShoppingDB {
 	
 
 	public ArrayList<Product> getProductsinCart() throws SQLException{
-
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
+		
 		ArrayList<Product> products = new ArrayList<Product>();
 		String query ="SELECT prod.product_id,market_id,prod.variant_gid,pc.price_vl,pc.currency_cd "
 				+ "FROM shp_price pc "
@@ -293,12 +324,16 @@ public class ShoppingDB {
 				+ "INNER JOIN shp_order orderr "
 				+ "ON orderitm.order_id=orderr.order_id "
 				+ "WHERE orderr.session_tk=?;";
+		
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);				
-				){
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+				
+			){
 			stmt.setString(1, session.getId());
 			ResultSet result = stmt.executeQuery();
+			con.commit();
+			
 			while(result.next()) {
 
 				Product product = new Product();
@@ -310,7 +345,6 @@ public class ShoppingDB {
 				product.setLabels(getProductLabels(product.getId()));
 
 				products.add(product);
-
 			}
 			result.close();
 		} 
@@ -324,8 +358,11 @@ public class ShoppingDB {
 	}
 
 	public ArrayList<Label> getProductLabels(long product_id) throws SQLException{
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
+		
 		ArrayList<Label> labels = new ArrayList<Label>();
-	
 		String query = "SELECT * "+
 				"FROM shp_label "+
 				"INNER JOIN shp_classification "+
@@ -333,15 +370,16 @@ public class ShoppingDB {
 				"INNER JOIN shp_product "+
 				"ON shp_classification.product_id = shp_product.product_id "+
 				"WHERE shp_product.product_id=?;";
+		
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-
-
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+				
 				){
 			stmt.setLong(1, product_id);
 			ResultSet result = stmt.executeQuery();
-
+			con.commit();
+			
 			while(result.next()) {
 				Label label = new Label();
 				label.setId(result.getLong("label_id"));
@@ -361,17 +399,22 @@ public class ShoppingDB {
 	}
 
 	public Label getLabel(String name) throws SQLException{
-		Label label = new Label();
-	
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
+		
+		Label label = new Label();	
 		String query = "SELECT * FROM shp_label "
 				     + "WHERE label_nm=?";
+		
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+				
 				){
-			
 			stmt.setString(1, name);
 			ResultSet result = stmt.executeQuery();
+			con.commit();
 			
 			while(result.next()) {
 				label.setId(result.getLong("label_id"));
@@ -389,6 +432,9 @@ public class ShoppingDB {
 	}
 
 	public JSONArray searchList(String type, String search) throws SQLException{
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
 		
 		String query="";
 		JSONArray json=new JSONArray();
@@ -402,12 +448,13 @@ public class ShoppingDB {
 		}
 
 		try (
-				Connection conn = datasource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-				){
-			stmt.setString(1, "%"+search+"%");
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);	
+			){
+			stmt.setString(1, "%"+search+"%");	
 			ResultSet result = stmt.executeQuery();
-
+			con.commit();
+			
 			while(result.next()) {
 				if("label".equals(type)) {
 					json.put(result.getString("label_nm"));
@@ -416,7 +463,6 @@ public class ShoppingDB {
 				}
 			}
 			result.close();
-
 		} 
 		catch (SQLException e) {
 
@@ -424,7 +470,6 @@ public class ShoppingDB {
 			e.printStackTrace();
 
 		}
-
 		return json;
 	}
 
