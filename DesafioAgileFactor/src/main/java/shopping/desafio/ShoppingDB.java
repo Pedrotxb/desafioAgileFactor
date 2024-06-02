@@ -435,10 +435,8 @@ public class ShoppingDB {
 		Connection con = datasource.getConnection();
 		con.setAutoCommit(false);
 		con.setReadOnly(true);
-		
 		String query="";
 		JSONArray json=new JSONArray();
-
 		if("label"==type) {
 			query="Select label_nm from shp_label "+
 					"WHERE label_nm LIKE ?;";	

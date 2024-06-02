@@ -10,152 +10,141 @@
 <c:set var = "labels" value ="${sessionScope.labels}"/>
 <c:set var = "order_id" value ="${sessionScope.order_id}"/>
 
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<link rel="stylesheet" href="Style.css">
-<meta charset="UTF-8">
-<title>Shopping</title>
-
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-<script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
-
-<link rel="stylesheet"
-	href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
-	
-<script type="text/javascript" src="Script.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+	<script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+	<script type="text/javascript" src="Script.js"></script>
+    <link rel="stylesheet" href="Style.css">
+</head>
 <body>
-	<ul id="menu" class="menu">
-
-		<li class="home"><a href="Shopping">Home</a></li>
-		<li  class="dropdown"><a class="dropbtn">Labels</a>
-			<ul class="dropdown-content">
-				<li>
-					<form action="Shopping" method="post">
-						<input type="text" id="searchlabel" placeholder="Procurar label..">
-					</form>
-
-				</li>
-				<c:if test = "${labels != null}">				
+    <nav class="navbar">
+        <div class="logo"><a href="Shopping" >Shopping</a></div>
+        <div class="search-container">	
+        	<form action="Shopping" method="post">
+            	<input type="text" id="search-product" placeholder="Procurar produto..." name="byname">
+            </form>
+            <div id="search-results" class="search-results"></div>
+        </div>
+        <div class="cart-icon" id="cart-icon">
+            <img src="images/cart.png" alt="Cart" />
+            <span id="cart-count">${sessionScope.cartproducts.size()+0}</span>
+        </div>
+    </nav>  
+    <div class="main-content">   
+        <aside class="sidebar hidden" id="sidebar">
+           <h2>Labels <span id="toggle-sidebar" class="toggle-sidebar">&#128473;</span></h2>
+            <div class="sidebar-content">         
+           		<form action="Shopping" method="post">
+                	<input type="text" id="search-label" placeholder="Procurar labels...">
+             	</form>
+                <ul class="labels-list" id="labels-list">
+                	<c:if test = "${labels != null}">				
 					<c:forEach var="label" items="${labels}">
 					<p>
-						<label>${label.name}</label>  
-						<a style="color:red;display:inline-block;" href="Shopping?filter=remove&&labelname=${label.name}">&#10006;</a>
+						<li>					
+							<a>${label.name}</a><button onclick="removeLabel('${label.name}')">&#128473;</button>				
+						</li> 
 					</p>	
+					</form>
 					</c:forEach>
 				</c:if>
-			</ul></li>
-
-		<li class="dropdown"><a class="dropbtn">Produtos</a>
-			<ul class="dropdown-content">
-				<li>
-					<form action="Shopping" method="post">
-						<input type="text" id="searchproduct" name="byname"
-							placeholder="Procurar produto..">
-					</form>
-
-				</li>
-			</ul></li>
-
-		<li class="cart"><a id="cart">Carrinho</a></li>
-	</ul>
-
-	<div align="center">
-
-		<ul id="product">
-			<c:if test ="${products != null}">
-				<c:forEach var = "product" items = "${products}">
-			<li><a onclick="openForm('${product.name}')">${product.name}</a></li>
-			<div class="form-popup" id="${product.name}">
-				<form class="form-container" action="Shopping" method="post">
-					<input type="hidden" name="addproduct" value="yes"> <input
-						type="hidden" name="prodid" value="${product.id}">
-					<table border="1" cellpadding="5">
-						<caption>
-							<h2>${product.name}</h2>
-						</caption>
-						<tr>
-							<th>Nome</th>
-							<td>${product.name}</td>
-						</tr>
-						<tr>
-							<th>Categorias</th>
-							<td>${product.getLabelsString()}</td>
-						</tr>
-						<tr>
-							<th padding:="5">Price</th>
-							<td>${product.getPrice().setScale(2)}</td>
-						</tr>
-
-					</table>
-					<p></p>
-					<div class="quantity">
-						<button type="button" class="minus"
-							onclick="decrement('Input=${product.getName()}')">&minus;</button>
-						<input id="Input=${product.getName()}" name="quantity"
-							type="number" class="input-box" value="1" min="1" max="10">
-						<button type="button" class="plus"
-							onclick="increment('Input=${product.getName()}')">&plus;</button>
-					</div>
-					<p></p>
-					<button type="submit" class="btn">Adicionar ao Carrinho</button>
-					<button type="button" class="btn cancel"
-						onclick="closeForm('${product.getName()}')">Fechar</button>
-				</form>
-			</div>
-				</c:forEach>
-			</c:if>
-		</ul>
+                </ul>
+                
+            </div>
+        </aside>
+      
+  			<button class="show-sidebar-btn" id="show-sidebar-btn">Labels</button>
+ 
+    <div class="product-container" id="product-container">
+    	<c:if test ="${products != null}">
+			<c:forEach var = "product" items = "${products}">
+        		<div class="product" data-id="${product.id}" data-name="${product.name}">
+        			<form class="form-container" action="Shopping" method="post">
+        				<input type="hidden" name="addproduct" value="yes"> 
+        				<input type="hidden" name="prodid" value="${product.id}">
+           				<img src="images/${product.name}.jpg">
+            			<h2>${product.name}</h2>
+            			<p>Preço: ${product.getPrice().setScale(2)}${product.getPriceCurrency()}</p>
+            			<p>Categorias: ${product.getLabelsString()}</p>            			
+            			<input id="Input=${product.getName()}" name="quantity" type="number" min="1" value="1" max="10" class="quantity">
+            			<button type="submit" class="add-to-cart">Adicionar</button>
+            		</form>
+        		</div>
+        	</c:forEach>
+		</c:if>		
+    </div>
 	</div>
-
-	<div id="myPopup" class="popup">
-		<div class="popup-content">
-			<div class="popup-closebtn">
-				<a id="closePopup">&#10006;</a>
-			</div>
-			<h1>Seu carrinho</h1>
-			<c:if test ="${sessionScope.cartproducts != null}">
-				<c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
-				<c:if test ="${cartproducts.size()==0}">			
-					<c:out value="Não tem produtos no seu carrinho!!!" /> 
-				</c:if>
-			<c:set var = "total" value ="${BigDecimal.ZERO}"/>
+	<c:if test ="${sessionScope.cartproducts != null}">
+    <div id="cart-popup" class="cart-popup" hidden>    
+        <div class="cart-header">
+            <h2>Seu carrinho</h2>
+            <button onclick="closePopup()" class="close-cart-btn">×</button>
+        </div>
+        
+		<c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
+		<div class="cart-table-container">
+        <table id="cart-items">
+          	<thead>
+                <tr>
+                    <th colspan="2">Produto</th>
+                    <th>Quantidade</th>
+                    <th>Preço</th>
+                    <th>Total</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Cart items will be inserted here -->
+                <c:set var = "total" value ="${BigDecimal.ZERO}"/>
 				<c:forEach var = "i" begin = "1" end ="${cartproducts.size()}">
 					<c:set var = "product" value ="${cartproducts[i-1]}"/>
 					<c:set var = "quantity" value ="${productquantity[i-1]}"/>
-			<form action="Shopping" method="post">
-				<input id="prodid${i}r" type="hidden" type="number"
-					value="${product.id}"> <input id="order_id${i}r"
-					type="hidden" type="number" value="${order_id}">
-				<div class="cart-align">
-					Nome:${product.name}
-					<br> Preço:${product.getPrice().setScale(2)}${product.getPriceCurrency()}
-					<br> Total:${product.getPrice().multiply(quantity).setScale(2)}${product.getPriceCurrency()}
-				</div>
-				<input type="button" onclick="removeproduct('${i}r')"
-					value="&#10006;" />
-			</form>
-			<br> <br>
-			<form action="Shopping" method="post">
-				<div class="cart-align">
-					<input id="quantity${i}u" type="number" value="${quantity}"
-						min="1" max="20"> <input id="prodid${i}u" type="hidden"
-						value="${product.getId()}"> <input id="order_id${i}u"
-						type="hidden" value="${order_id}"> <input type="button"
-						onclick="updateproduct('${i}u')" value="Atualizar">
-				</div>
-			</form>
-			<br> <br>
-			<c:set var="total" value="${total=total.add(product.getPrice().multiply(quantity)).setScale(2)}"/>
-			<c:if test ="${cartproducts.size() == i}">
-				Total Carrinho:${total}${product.getPriceCurrency()}
-			</c:if>
-			</c:forEach>
-			</c:if>
-			
-		</div>
-	</div>
+                <tr>
+                	<td><img src="images/${product.name}.jpg"></td>
+                    <td>${product.name}</td>
+                    <td>
+                    	<form action="Shopping" method="post">
+                    
+                    		<div class="quantity-container">
+                    			<button type="button" class="quantity-btn" onclick="decrementQuantity('${i}')">-</button>
+									<input style="padding-left:15px;width:45px;text-align:center;" id="quantity${i}" type="number" value="${quantity}" min="1" max="20" >
+								<button type="button" class="quantity-btn" onclick="incrementQuantity('${i}')">+</button> 
+							</div>	
+							<input id="prodid${i}u" type="hidden" value="${product.getId()}"> 
+							<input id="order_id${i}u" type="hidden" value="${order_id}"> 
+									
+                    </td>
+                    <td>${product.getPrice().setScale(2)}${product.getPriceCurrency()}</td>
+                    <td>${product.getPrice().multiply(quantity).setScale(2)}${product.getPriceCurrency()}</td>
+                    <td>
+                    	<input id="update" type="button" onclick="updateproduct('${i}')" value="Atualizar">
+                    	</form> 
+                    	<form action="Shopping" method="post">
+							<input id="prodid${i}r" type="hidden" value="${product.getId()}"> 
+							<input id="order_id${i}r" type="hidden" value="${order_id}"> 
+                    		<input id="remove" type="button" onclick="removeproduct('${i}r')" value="Remover"></td>
+                    	</form>                  
+                </tr>
+                <c:set var="total" value="${total=total.add(product.getPrice().multiply(quantity)).setScale(2)}"/>          
+                </c:forEach>
+            </tbody>
+        </table>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <strong>Total:<span id="cart-total">${total}${product.getPriceCurrency()}</span></strong>
+            </div>
+            <button class="checkout-btn">Checkout</button>
+        </div>
+    	
+    </div>
+    </c:if>
 </body>
 </html>

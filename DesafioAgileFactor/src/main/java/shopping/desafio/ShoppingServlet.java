@@ -71,8 +71,22 @@ public class ShoppingServlet extends HttpServlet {
 						 request.getParameter("labelname"));					 
 		}		
 		
-		RequestDispatcher rd=request.getRequestDispatcher("Shopping.jsp");
-		rd.forward(request, response);
+		
+		//Multiple data requests
+		RequestDispatcher dispatcher;
+		if("cartpopup".equals(request.getParameter("dispatcher"))) {
+			dispatcher = request.getRequestDispatcher("/CartContent.jsp");
+	        dispatcher.include(request, response);
+		}else if("labelpopup".equals(request.getParameter("dispatcher"))){
+			dispatcher = request.getRequestDispatcher("/RemoveLabelContent.jsp");
+	        dispatcher.include(request, response);
+		}else if("listproducts".equals(request.getParameter("dispatcher"))){
+			dispatcher = request.getRequestDispatcher("/ListProductsContent.jsp");
+	        dispatcher.include(request, response);
+		}else {	
+			RequestDispatcher rd=request.getRequestDispatcher("Shopping.jsp");
+			rd.forward(request, response);
+		}
 	}
 
 	/**

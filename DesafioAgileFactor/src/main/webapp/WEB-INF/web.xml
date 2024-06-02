@@ -29,16 +29,7 @@
     <servlet-name>Shopping</servlet-name>
     <url-pattern>/Shopping</url-pattern>
   </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>ProductServlet</display-name>
-    <servlet-name>ProductServlet</servlet-name>
-    <servlet-class>shopping.desafio.ProductServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>ProductServlet</servlet-name>
-    <url-pattern>/ProductInfo</url-pattern>
-  </servlet-mapping>
+
   <welcome-file-list>
     <welcome-file>Shopping.jsp</welcome-file>
   </welcome-file-list>
