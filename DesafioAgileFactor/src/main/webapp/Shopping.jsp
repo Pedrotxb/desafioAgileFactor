@@ -34,7 +34,7 @@
         </div>
         <div class="cart-icon" id="cart-icon">
             <img src="images/cart.png" alt="Cart" />
-            <span id="cart-count">${sessionScope.cartproducts.size()+0}</span>
+            <span id="cart-count"></span>
         </div>
     </nav>  
     <div class="main-content">   
@@ -67,14 +67,12 @@
 			<c:forEach var = "product" items = "${products}">
         		<div class="product" data-id="${product.id}" data-name="${product.name}">
         			<form class="form-container" action="Shopping" method="post">
-        				<input type="hidden" name="addproduct" value="yes"> 
-        				<input type="hidden" name="prodid" value="${product.id}">
            				<img src="images/${product.name}.jpg">
             			<h2>${product.name}</h2>
             			<p>Preço: ${product.getPrice().setScale(2)}${product.getPriceCurrency()}</p>
             			<p>Categorias: ${product.getLabelsString()}</p>            			
             			<input id="Input=${product.getName()}" name="quantity" type="number" min="1" value="1" max="10" class="quantity">
-            			<button type="submit" class="add-to-cart">Adicionar</button>
+            			<input type="button" onclick="addProduct('${product.id}',document.getElementById('Input=${product.getName()}').value)" class="add-to-cart" value="Adicionar">
             		</form>
         		</div>
         	</c:forEach>
@@ -124,12 +122,12 @@
                     <td>${product.getPrice().setScale(2)}${product.getPriceCurrency()}</td>
                     <td>${product.getPrice().multiply(quantity).setScale(2)}${product.getPriceCurrency()}</td>
                     <td>
-                    	<input id="update" type="button" onclick="updateproduct('${i}')" value="Atualizar">
+                    	<input id="update" type="button" onclick="updateProduct('${i}')" value="Atualizar">
                     	</form> 
                     	<form action="Shopping" method="post">
 							<input id="prodid${i}r" type="hidden" value="${product.getId()}"> 
 							<input id="order_id${i}r" type="hidden" value="${order_id}"> 
-                    		<input id="remove" type="button" onclick="removeproduct('${i}r')" value="Remover"></td>
+                    		<input id="remove" type="button" onclick="removeProduct('${i}r')" value="Remover"></td>
                     	</form>                  
                 </tr>
                 <c:set var="total" value="${total=total.add(product.getPrice().multiply(quantity)).setScale(2)}"/>          

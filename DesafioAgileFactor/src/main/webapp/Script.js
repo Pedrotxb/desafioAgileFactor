@@ -1,4 +1,4 @@
-//Generate JSON+PDF
+	//Generate JSON+PDF
 	function generateFiles(id){
 		$.ajax({
 			type : "post",
@@ -16,7 +16,11 @@
         var labelCount = $('#labels-list li').length;
         $('#show-sidebar-btn').append('<span class="badge">' + labelCount + '</span>');
     }
-//remove label
+    function updateCartCount() {
+        var cartCount = $('#cart-items tr').length-1;
+        document.getElementById('cart-count').textContent = cartCount;
+    }
+	//remove label
 	function removeLabel(name) {
 		$.ajax({
 			type : "post",
@@ -34,7 +38,7 @@
 			}
 		});
 	}
-	
+	//generate prods
 	function getProducts() {
 		$.ajax({
 			type : "post",
@@ -43,7 +47,7 @@
 				dispatcher: "listproducts"			
 			},
 			success : function(data, status) {
-					 	$('#product-container').html(data);
+				$('#product-container').html(data);
 			}
 		});
 	}
@@ -52,7 +56,7 @@
  * 
  */
 //update product quantity
-	function updateproduct(id) {
+	function updateProduct(id) {
 		var quantity = document.getElementById('quantity'+id).value;
 		if (quantity < 1){
 			quantity = 1;
@@ -78,7 +82,7 @@
 		});
 	}
 	//remove product
-	function removeproduct(id) {
+	function removeProduct(id) {
 		$.ajax({
 			type : "post",
 			url : "Shopping", 
@@ -87,7 +91,26 @@
 			success : function(msg) {
 				$.get("Shopping?dispatcher=cartpopup", function(data, status) {
 					 $('#cart-popup').html(data);
-					 document.getElementById('cart-count').textContent -= 1;
+					 updateCartCount();
+				});
+			}
+		});
+	}
+	
+	//add product to cart
+	function addProduct(id,quantity) {
+		$.ajax({
+			type : "post",
+			url : "Shopping", 
+			data : {
+				addproduct : "yes",
+				prodid : id,
+				quantity : quantity				
+			},
+			success : function(msg){
+				$.get("Shopping?dispatcher=cartpopup", function(data, status) {
+					 $('#cart-popup').html(data);
+					 updateCartCount();
 				});
 			}
 		});
@@ -104,7 +127,7 @@
         value--;
         input.value = value;
     }
-    updateproduct(id);
+    updateProduct(id);
 }
 
 function incrementQuantity(id) {
@@ -114,7 +137,7 @@ function incrementQuantity(id) {
         value++;
         input.value = value;
     }
-    updateproduct(id);
+    updateProduct(id);
 }
 	
 	
@@ -123,13 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	const toggleSidebarBtn = document.getElementById("toggle-sidebar");
     const showSidebarBtn = document.getElementById("show-sidebar-btn");
     const sidebar = document.getElementById("sidebar");
+	updateCartCount();
 
     cartIcon.addEventListener('click', () => {
         document.getElementById('cart-popup').style.display = 'block';
     });
 
-	
-	
 	//Autocomplete label search
 	$(function() {
 		$('#search-label').autocomplete({
@@ -178,12 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-		
-		
-
-    // Initial update of label count
-    updateLabelCount();
 	});
+	
 
 	//Autocomplete product search
 	$(function() {

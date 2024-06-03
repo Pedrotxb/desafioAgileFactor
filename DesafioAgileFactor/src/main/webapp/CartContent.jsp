@@ -41,12 +41,12 @@
                     <td>${product.getPrice().setScale(2)}${product.getPriceCurrency()}</td>
                     <td>${product.getPrice().multiply(quantity).setScale(2)}${product.getPriceCurrency()}</td>
                     <td>
-                    	<input id="update" type="button" onclick="updateproduct('${i}')" value="Atualizar">
+                    	<input id="update" type="button" onclick="updateProduct('${i}')" value="Atualizar">
                     	</form> 
                     	<form action="Shopping" method="post">
 							<input id="prodid${i}r" type="hidden" value="${product.getId()}"> 
 							<input id="order_id${i}r" type="hidden" value="${order_id}"> 
-                    		<input id="remove" type="button" onclick="removeproduct('${i}r')" value="Remover"></td>
+                    		<input id="remove" type="button" onclick="removeProduct('${i}r')" value="Remover"></td>
                     	</form>                  
                 </tr>
                 <c:set var="total" value="${total=total.add(product.getPrice().multiply(quantity)).setScale(2)}"/>          
