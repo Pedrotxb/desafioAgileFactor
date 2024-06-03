@@ -1,3 +1,17 @@
+//Generate JSON+PDF
+	function generateFiles(id){
+		$.ajax({
+			type : "post",
+			url : "GenerateFilesServlet",
+			data : {
+				order_id: id		
+			},
+			success : function(msg) {
+				location.reload();
+			}
+		});
+	}
+
 	function updateLabelCount() {
         var labelCount = $('#labels-list li').length;
         $('#show-sidebar-btn').append('<span class="badge">' + labelCount + '</span>');

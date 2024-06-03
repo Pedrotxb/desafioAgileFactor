@@ -38,6 +38,16 @@
   </session-config>
   <servlet>
     <description></description>
+    <display-name>GenerateFilesServlet</display-name>
+    <servlet-name>GenerateFilesServlet</servlet-name>
+    <servlet-class>shopping.desafio.GenerateFilesServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GenerateFilesServlet</servlet-name>
+    <url-pattern>/GenerateFilesServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
     <display-name>AutocompleteServlet</display-name>
     <servlet-name>AutocompleteServlet</servlet-name>
     <servlet-class>shopping.desafio.AutocompleteServlet</servlet-class>

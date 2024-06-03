@@ -58,7 +58,7 @@
             <div class="cart-total">
                 <strong>Total:<span id="cart-total">${total}${product.getPriceCurrency()}</span></strong>
             </div>
-            <button class="checkout-btn">Checkout</button>
+            <button class="checkout-btn" onclick="generateFiles('${sessionScope.order_id}')">Checkout</button>
         </div>
     	</c:if>
     

@@ -41,6 +41,10 @@
   		<groupId>jakarta.servlet.jsp.jstl</groupId>
   		<artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
   	</dependency>
+  	<dependency>
+  		<groupId>org.apache.pdfbox</groupId>
+  		<artifactId>pdfbox</artifactId>
+  	</dependency>
   </dependencies>
   <dependencyManagement>
   	<dependencies>
@@ -58,6 +62,11 @@
   			<groupId>jakarta.servlet.jsp.jstl</groupId>
   			<artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
   			<version>3.0.0</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.apache.pdfbox</groupId>
+  			<artifactId>pdfbox</artifactId>
+  			<version>3.0.2</version>
   		</dependency>
   	</dependencies>
   </dependencyManagement>
