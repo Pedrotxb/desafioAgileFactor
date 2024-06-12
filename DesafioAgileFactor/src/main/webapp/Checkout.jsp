@@ -27,74 +27,14 @@
 <body>
     <nav class="navbar">
         <div class="logo"><a href="Shopping" >Shopping</a></div>
-        <div class="search-container">	
-        	<form action="Shopping" method="post">
-            	<input type="text" id="search-product" placeholder="Procurar produto..." name="byname">
-            </form>
-            <div id="search-results" class="search-results"></div>
-        </div>
         <div class="cart-icon" id="cart-icon">
             <img src="images/cart.png" alt="Cart" />
             <span id="cart-count"></span>
         </div>
     </nav>  
-    <div class="main-content">   
-        <aside class="sidebar hidden" id="sidebar">
-           <h2>Labels <span id="toggle-sidebar" class="toggle-sidebar">&#128473;</span></h2>
-            <div class="sidebar-content">         
-           		<form action="Shopping" method="post">
-                	<input type="text" id="search-label" placeholder="Procurar labels...">
-             	</form>
-                <ul class="labels-list" id="labels-list">
-                	<c:if test = "${labels != null}">				
-					<c:forEach var="label" items="${labels}">
-					<p>
-						<li>					
-							<a>${label.name}</a><button onclick="removeLabel('${label.name}')">&#128473;</button>				
-						</li> 
-					</p>	
-					</form>
-					</c:forEach>
-				</c:if>
-                </ul>
-                
-            </div>
-        </aside>
-      
-  			<button class="show-sidebar-btn" id="show-sidebar-btn">Labels</button>
- 
-    <div class="product-container" id="product-container">
-    	<c:if test ="${products != null}">
-			<c:forEach var = "product" items = "${products}">
-				<c:set var = "pricetax" value ="${product.getPrice()}"/>
-        		<div class="product" data-id="${product.id}" data-name="${product.name}">
-        			<form class="form-container" action="Shopping" method="post">
-           				<img src="images/${product.name}.jpg">
-            			<h2>${product.name}</h2>
-            			<p>Preço: 
-							<c:forEach var="label" items="${product.getLabels()}">
-								<c:forEach var="tax" items="${label.getTaxes()}">	
-									<c:set var="pricetax" value="${pricetax=pricetax.add(pricetax.multiply(tax.getValue())).setScale(2,RoundingMode.HALF_EVEN)}"/>                  				
-								</c:forEach>
-							</c:forEach>
-							${pricetax}${product.getPriceCurrency()}	
-						</p>
-            			<p>Categorias: ${product.getLabelsString()}</p>            			
-            			<input id="Input=${product.getName()}" name="quantity" type="number" min="1" value="1" max="10" class="quantity">
-            			<input type="button" onclick="addProduct('${product.id}',document.getElementById('Input=${product.getName()}').value)" class="add-to-cart" value="Adicionar">
-            		</form>
-        		</div>
-        	</c:forEach>
-		</c:if>		
-    </div>
-	</div>
+    
 	<c:if test ="${sessionScope.cartproducts != null}">
-    <div id="cart-popup" class="cart-popup" hidden>    
-        <div class="cart-header">
-            <h2>Seu carrinho</h2>
-            <button onclick="closePopup()" class="close-cart-btn">×</button>
-        </div>
-        
+    <div id="cart-popup" class="checkout" >    
 		<c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
 		<div class="cart-table-container">
         <table id="cart-items">
@@ -156,11 +96,12 @@
             </tbody>
         </table>
         </div>
-        <div class="cart-footer">
+        <div class="checkout-footer">
             <div class="cart-total">
                 <strong>Total:<span id="cart-total">${total}${product.getPriceCurrency()}</span></strong>
             </div>
-            <a href="Checkout.jsp" class="checkout-btn">Checkout</a>         
+            <button class="clear-btn" onclick="clearCart('${order_id}')">Limpar Carrinho</button>
+            <button class="checkout-btn" onclick="generateFiles('${order_id}')">Submeter Encomenda</button>
         </div>
     	
     </div>

@@ -384,7 +384,8 @@ public class ShoppingDB {
 				Label label = new Label();
 				label.setId(result.getLong("label_id"));
 				label.setName(result.getString("label_nm"));
-
+				label.setTaxes(getLabelTaxes(label.getId()));
+				
 				labels.add(label);
 			}
 			result.close();
@@ -398,6 +399,45 @@ public class ShoppingDB {
 		return labels;
 	}
 
+	public ArrayList<Tax> getLabelTaxes(long label_id) throws SQLException{
+		Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(true);
+		
+		ArrayList<Tax> taxes = new ArrayList<Tax>();
+		String query = "SELECT tax_tp, tax_cd FROM shp_label_tax "+
+					   "WHERE (tax_tp, start_dt) IN "+
+			           "(SELECT tax_tp, MAX(start_dt) FROM shp_label_tax "+
+			           "WHERE label_id=? GROUP By tax_tp) ";
+		
+		try (
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+				
+				){
+			stmt.setLong(1, label_id);
+			ResultSet result = stmt.executeQuery();
+			con.commit();
+			
+			while(result.next()) {
+				Tax tax = new Tax();
+				tax.setType(result.getString("tax_tp"));
+				tax.setCode(result.getString("tax_cd"));
+				
+				taxes.add(tax);
+			}
+			result.close();
+		} 
+		catch (SQLException e) {
+
+			System.out.println("Exception connecting to database, getLabelTaxes method::"+e.getMessage());
+			e.printStackTrace();
+
+		}
+		return taxes;
+	}
+	
+	
 	public Label getLabel(String name) throws SQLException{
 		Connection con = datasource.getConnection();
 		con.setAutoCommit(false);

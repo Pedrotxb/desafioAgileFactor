@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@page import="java.math.BigDecimal"%>    
+<%@page import="java.math.RoundingMode"%>
         <div class="cart-header">
             <h2>Seu carrinho</h2>
             <button onclick="closePopup()" class="close-cart-btn">×</button>
@@ -21,7 +22,9 @@
                 <c:set var = "total" value ="${BigDecimal.ZERO}"/>
 				<c:forEach var = "i" begin = "1" end ="${sessionScope.cartproducts.size()}">
 					<c:set var = "product" value ="${sessionScope.cartproducts[i-1]}"/>
+					<c:set var = "pricetax" value ="${product.getPrice()}"/>
 					<c:set var = "quantity" value ="${sessionScope.productsquantity[i-1]}"/>
+					<c:set var ="labels" value ="${product.getLabels()}"/>
                 <tr>
                 	<td><img src="images/${product.name}.jpg"></td>
                     <td>${product.name}</td>
@@ -38,8 +41,18 @@
 						</div>
 					
                     </td>
-                    <td>${product.getPrice().setScale(2)}${product.getPriceCurrency()}</td>
-                    <td>${product.getPrice().multiply(quantity).setScale(2)}${product.getPriceCurrency()}</td>
+                    <td>
+                    	<c:forEach var="label" items="${labels}">
+                    		<c:if test="${label.getTaxes()!=null}">	
+                    			<c:forEach var="tax" items="${label.getTaxes()}">	
+                    				<c:set var="pricetax" value="${pricetax=pricetax.add(pricetax.multiply(tax.getValue())).setScale(2,RoundingMode.HALF_EVEN)}"/>                 				
+                    				${tax.getCode()}${tax.getType()}<br>                 					     		 		 
+                    			</c:forEach>                    			
+                    		</c:if>	
+                    	</c:forEach>
+                    	${pricetax}${product.getPriceCurrency()}
+                     </td>
+                    <td>${pricetax.multiply(quantity).setScale(2)}${product.getPriceCurrency()}</td>
                     <td>
                     	<input id="update" type="button" onclick="updateProduct('${i}')" value="Atualizar">
                     	</form> 
@@ -49,7 +62,7 @@
                     		<input id="remove" type="button" onclick="removeProduct('${i}r')" value="Remover"></td>
                     	</form>                  
                 </tr>
-                <c:set var="total" value="${total=total.add(product.getPrice().multiply(quantity)).setScale(2)}"/>          
+                 <c:set var="total" value="${total=total.add(pricetax.multiply(quantity)).setScale(2)}"/>        
                 </c:forEach>
             </tbody>
         </table>
@@ -58,7 +71,7 @@
             <div class="cart-total">
                 <strong>Total:<span id="cart-total">${total}${product.getPriceCurrency()}</span></strong>
             </div>
-            <button class="checkout-btn" onclick="generateFiles('${sessionScope.order_id}')">Checkout</button>
+           <a href="Checkout.jsp" class="checkout-btn">Checkout</a>
         </div>
     	</c:if>
     

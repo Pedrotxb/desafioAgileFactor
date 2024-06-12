@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class Product {
-
 	private long market;
 	private long id;
 	private String name;
