@@ -27,6 +27,30 @@ public class ShoppingDB {
         }	
     }
 	
+    public void clearCart(long order_id) throws SQLException{
+    	Connection con = datasource.getConnection();
+		con.setAutoCommit(false);
+		con.setReadOnly(false);
+		
+		
+		String query ="DELETE FROM shp_order_item "+
+					  "WHERE order_id=?;";
+				
+		try (
+				con;
+				PreparedStatement stmt = con.prepareStatement(query);
+			){		
+			stmt.setLong(1, order_id);
+			stmt.executeUpdate();
+			con.commit();	
+		} 
+		catch (SQLException e) {
+			System.out.println("Exception connecting to database, clearCart method::"+e.getMessage());
+			e.printStackTrace();
+			con.rollback();
+		}
+	}
+    
 	public void createCart() throws SQLException{
 		Connection con = datasource.getConnection();
 		con.setAutoCommit(false);
@@ -132,15 +156,14 @@ public class ShoppingDB {
 		Connection con = datasource.getConnection();
 		con.setAutoCommit(false);
 		con.setReadOnly(true);
-		
 	   	this.session=RequestFilter.getSession();
+	   	
 		Cart cart = new Cart();
 		ArrayList<Integer> itemquantity = new ArrayList<Integer>();
-		String query = "SELECT shp_order.session_tk,shp_order.order_id,shp_order_item.item_qt, "
-				+"shp_order_item.product_id FROM shp_order "
-				+"INNER JOIN shp_order_item "
-				+"ON shp_order.order_id=shp_order_item.order_id "
-				+"WHERE session_tk=?;";
+		String query = "SELECT order_id,item_qt from shp_order_item "+
+				       "WHERE (order_id) IN "+
+				       "(Select max(order_id) from shp_order "+
+				       "WHERE session_tk=?);";
 
 		try (
 				con;
@@ -153,8 +176,8 @@ public class ShoppingDB {
 			while(result.next()) {
 				if(cart.getSession()==null) {
 					cart.setId(result.getLong("order_id"));
-					cart.setSession(result.getString("session_tk"));
-					cart.setCartProducts(getProductsinCart());
+					cart.setSession(session.getId());
+					cart.setCartProducts(getProductsinCart(cart.getId()));
 				}
 				itemquantity.add(result.getInt("item_qt"));
 			}
@@ -175,7 +198,7 @@ public class ShoppingDB {
 		con.setAutoCommit(false);
 		con.setReadOnly(true);
 		
-		String query ="SELECT order_id,session_tk FROM shp_order WHERE session_tk=?;";
+		String query ="SELECT max(order_id),session_tk FROM shp_order WHERE session_tk=?;";
 		Cart cartsession = new Cart(); 
 		
 		try (
@@ -188,7 +211,7 @@ public class ShoppingDB {
 			con.commit();
 			
 			if(result.next()) {
-				cartsession.setId(result.getLong("order_id"));
+				cartsession.setId(result.getLong("max(order_id)"));
 				cartsession.setSession(result.getString("session_tk"));
 			}
 			result.close();
@@ -309,7 +332,7 @@ public class ShoppingDB {
 	}
 	
 
-	public ArrayList<Product> getProductsinCart() throws SQLException{
+	public ArrayList<Product> getProductsinCart(long order_id) throws SQLException{
 		Connection con = datasource.getConnection();
 		con.setAutoCommit(false);
 		con.setReadOnly(true);
@@ -323,14 +346,14 @@ public class ShoppingDB {
 				+ "ON prod.product_id=orderitm.product_id "
 				+ "INNER JOIN shp_order orderr "
 				+ "ON orderitm.order_id=orderr.order_id "
-				+ "WHERE orderr.session_tk=?;";
+				+ "WHERE orderr.order_id=?;";
 		
 		try (
 				con;
 				PreparedStatement stmt = con.prepareStatement(query);
 				
 			){
-			stmt.setString(1, session.getId());
+			stmt.setLong(1, order_id);
 			ResultSet result = stmt.executeQuery();
 			con.commit();
 			

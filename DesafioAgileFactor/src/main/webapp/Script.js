@@ -7,10 +7,13 @@
 				order_id: id		
 			},
 			success : function(msg) {
-				location.reload();
+				alert("Encomenda confirmada!!!");
+				location.href = "Shopping?checkout=yes";
 			}
 		});
 	}
+	
+	
 
 	function updateLabelCount() {
         var labelCount = $('#labels-list li').length;
@@ -81,6 +84,31 @@
 			}
 		});
 	}
+	//update product quantity from checkout
+	function updateProductCheckout(id) {
+		var quantity = document.getElementById('quantity'+id).value;
+		if (quantity < 1){
+			quantity = 1;
+		}	
+
+    	const prodid = document.getElementById('prodid'+id+'u').value;
+    	const order_id = document.getElementById('order_id'+id+'u').value;
+		$.ajax({
+			type : "post",
+			url : "Shopping", 
+			data : {
+					quantity : quantity,
+					prodid : prodid,
+					order_id : order_id,
+					cart : "update"
+				},
+			success : function(msg) {
+				$.get("Shopping?dispatcher=checkout", function(data, status) {
+					 $('#checkout-page').html(data);
+				});
+			}
+		});
+	}
 	//remove product
 	function removeProduct(id) {
 		$.ajax({
@@ -116,28 +144,51 @@
 		});
 	}
 	
+	//remove product
+	function clearCart(id) {
+		$.ajax({
+			type : "post",
+			url : "Shopping", 
+			data :{
+				order_id : id,
+				cart : "clear",
+				prodid : "-1"				
+			},
+			success : function(msg) {
+				location.href = "Shopping";
+					alert("Carrinho esvaziado!!");
+			}
+		});
+	}
+	
 	function closePopup(){
 		document.getElementById('cart-popup').style.display = 'none';
 	}
 	
-	function decrementQuantity(id) {
+	function decrementQuantity(id,checkout) {
     const input = document.getElementById(`quantity${id}`);
     let value = parseInt(input.value);
     if (value > parseInt(input.min)) {
         value--;
         input.value = value;
     }
-    updateProduct(id);
+    if (checkout==1)
+    	updateProductCheckout(id);	 	
+    else
+    	updateProduct(id);	
 }
 
-function incrementQuantity(id) {
+function incrementQuantity(id,checkout) {
     const input = document.getElementById(`quantity${id}`);
     let value = parseInt(input.value);
     if (value < parseInt(input.max)) {
         value++;
         input.value = value;
     }
-    updateProduct(id);
+    if (checkout==1)
+    	updateProductCheckout(id);
+    else
+    	updateProduct(id);	
 }
 	
 	

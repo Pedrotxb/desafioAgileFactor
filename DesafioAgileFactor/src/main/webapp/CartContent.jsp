@@ -1,11 +1,12 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@page import="java.math.BigDecimal"%>    
 <%@page import="java.math.RoundingMode"%>
+
         <div class="cart-header">
             <h2>Seu carrinho</h2>
             <button onclick="closePopup()" class="close-cart-btn">×</button>
         </div>
-        <c:if test ="${cartproducts != null}">
+        <c:if test ="${cartproducts != null}">     
         <div class="cart-table-container">
         <table id="cart-items">
           	<thead>
@@ -37,7 +38,7 @@
 								<button type="button" class="quantity-btn" onclick="incrementQuantity('${i}')">+</button> 
 							</div>	 
 							<input id="prodid${i}u" type="hidden" value="${product.getId()}"> 
-							<input id="order_id${i}u" type="hidden" value="${order_id}"> 
+							<input id="order_id${i}u" type="hidden" value="${sessionScope.order_id}"> 
 						</div>
 					
                     </td>

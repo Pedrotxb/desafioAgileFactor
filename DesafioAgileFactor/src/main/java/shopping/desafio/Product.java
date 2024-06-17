@@ -20,8 +20,13 @@ public class Product {
 
 	public String getLabelsString() {
 		String label= "";
+		int i=1;
 		for(Label lab : labels) {
-			label += lab.getName()+" ";
+			if(i<labels.size())
+				label += lab.getName()+", ";
+			else 
+				label += lab.getName();
+			i++;
 		}   	
 		return label;
 	}

@@ -1,43 +1,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="UTF-8"%>
-<%@page import="shopping.desafio.*"%>
-<%@page import="java.util.ArrayList"%>
-<%@page import="java.math.BigDecimal"%>
+<%@page import="java.math.BigDecimal"%>    
 <%@page import="java.math.RoundingMode"%>
-
-
-<c:set var = "products" value ="${sessionScope.products}"/>
-<c:set var = "labels" value ="${sessionScope.labels}"/>
-<c:set var = "order_id" value ="${sessionScope.order_id}"/>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping</title>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
-    <script type="text/javascript" src="Script.js"></script>
-    <link rel="stylesheet" href="Style.css">
-</head>
-<body>
-    <nav class="navbar">
-        <div class="logo"><a href="Shopping">Shopping</a></div>
-        <div class="cart-icon" id="cart-icon">
-            <img src="images/cart.png" alt="Cart" />
-            <span id="cart-count"></span>
-        </div>
-    </nav>  
-    
-    <c:if test="${sessionScope.cartproducts != null}">
-    <div class="checkout-page" id="checkout-page">    
-        <c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
-        <c:set var = "productquantity" value ="${sessionScope.productsquantity}"/>
-        <h2>Carrinho</h2>
+<c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
+<c:set var = "productquantity" value ="${sessionScope.productsquantity}"/>
+		<h2>Carrinho</h2>
         <div class="cart-table-container">
             <table id="cart-items">
                 <thead>
@@ -96,7 +62,4 @@
             <button class="clear-btn" onclick="clearCart('${order_id}')">Clear Cart</button>
             <button class="checkout-btn" onclick="generateFiles('${order_id}')">Submit Order</button>
         </div>
-    </div>
-    </c:if>
-</body>
-</html>
+ 

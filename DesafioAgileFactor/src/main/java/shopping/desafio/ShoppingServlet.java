@@ -40,13 +40,28 @@ public class ShoppingServlet extends HttpServlet {
 		
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		this.session = request.getSession();
-		getCart();	
-
-		//Create cart if null and Add product to cart 
-		if("yes".equals(request.getParameter("addproduct"))) {
-			checkSession(Long.parseLong(request.getParameter("prodid")),
-					Integer.parseInt(request.getParameter("quantity")));
+		getCart();
+		
+		//Create new order on checkout
+		if("yes".equals(request.getParameter("checkout"))) {
+			this.cart.setSession(null);
+			session.removeAttribute("cartproducts");
+			session.removeAttribute("productsquantity");
+			session.removeAttribute("order_id");
 		}
+		
+		//Create cart if null
+		if (cart.getSession()==null) {
+			this.cart = new Cart();
+			createCart();
+		}	
+
+		//Add product to cart 
+		if("yes".equals(request.getParameter("addproduct"))) {
+			manageCart("add",Long.parseLong(request.getParameter("prodid")),
+					Integer.parseInt(request.getParameter("quantity")),cart.getId());
+		}
+
 
 		// Update/Remove product from cart
 		if("update".equals(request.getParameter("cart"))) {
@@ -55,9 +70,9 @@ public class ShoppingServlet extends HttpServlet {
 					Integer.parseInt(request.getParameter("quantity")),	
 					Long.parseLong(request.getParameter("order_id")));
 
-		}else if("remove".equals(request.getParameter("cart"))){
+		}else if("clear".equals(request.getParameter("cart"))||"remove".equals(request.getParameter("cart"))){
 			manageCart(Long.parseLong(request.getParameter("prodid")),
-					Long.parseLong(request.getParameter("order_id")));
+					Long.parseLong(request.getParameter("order_id")));			
 		}
 
 		//Search product by name
@@ -83,12 +98,14 @@ public class ShoppingServlet extends HttpServlet {
 		}else if("listproducts".equals(request.getParameter("dispatcher"))){
 			dispatcher = request.getRequestDispatcher("/ListProductsContent.jsp");
 	        dispatcher.include(request, response);
+		}else if("checkout".equals(request.getParameter("dispatcher"))){	
+			dispatcher = request.getRequestDispatcher("/CheckoutContent.jsp");
+	        dispatcher.include(request, response);
 		}else {	
 			RequestDispatcher rd=request.getRequestDispatcher("Shopping.jsp");
 			rd.forward(request, response);
 		}
-	}
-
+	}		
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -102,6 +119,8 @@ public class ShoppingServlet extends HttpServlet {
 		try {
 			//Get cart from session
 			this.cart=db.getCart();
+			if (cart.getSession()==null)
+					this.cart=db.getCartSession();
 			session.setAttribute("cartproducts", cart.getCartProducts());
 			session.setAttribute("productsquantity", cart.getQuantity());		
 			session.setAttribute("order_id", cart.getId());
@@ -138,26 +157,19 @@ public class ShoppingServlet extends HttpServlet {
 		}
 	}
 	
-	private void checkSession(long product_id, int quantity) {
+	private void createCart() {
 		try {
 			//Check cart on db if null create
-			if (cart.getSession()==null) {
-				db.createCart();
-				this.cart=db.getCartSession();
-			}	  
-			//Add product to cart
-			manageCart("add",product_id,quantity,cart.getId());
-			//Update cart	
-			getCart();	
-
-		}  	
+			db.createCart();
+			getCart();
+		}
 		catch (SQLException e) {
-			System.out.println("Exception connecting to database, checkSession method in ShoppingServlet::"+e.getMessage());
+			System.out.println("Exception connecting to database, createCart method in ShoppingServlet::"+e.getMessage());
 			e.printStackTrace();
 		}
-
 	}
-
+	
+	
 	private void manageCart(String manage, long product_id, int quantity, long order_id) {
 		if("update".equals(manage)){
 			try {
@@ -171,6 +183,7 @@ public class ShoppingServlet extends HttpServlet {
 		}else{
 			try {
 				db.addProducttoCart(order_id,product_id,quantity);	
+				getCart();
 			}
 			catch (SQLException e) {
 				System.out.println("Exception connecting to database, manageCart method in ShoppingServlet::"+e.getMessage());
@@ -181,7 +194,10 @@ public class ShoppingServlet extends HttpServlet {
 
 	private void manageCart(long product_id, long order_id) {
 		try {
-			db.removeProduct(order_id,product_id);
+			if(product_id!=-1)
+				db.removeProduct(order_id,product_id);
+			else 
+				db.clearCart(order_id);
 		}
 		catch (SQLException e) {
 			System.out.println("Exception connecting to database, manageCart method in ShoppingServlet::"+e.getMessage());

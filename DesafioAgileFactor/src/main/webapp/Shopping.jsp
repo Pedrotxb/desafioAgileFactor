@@ -6,7 +6,6 @@
 <%@page import="java.math.BigDecimal"%>
 <%@page import="java.math.RoundingMode"%>
 
-<c:set var = "productquantity" value ="${sessionScope.productsquantity}"/>
 <c:set var = "products" value ="${sessionScope.products}"/>
 <c:set var = "labels" value ="${sessionScope.labels}"/>
 <c:set var = "order_id" value ="${sessionScope.order_id}"/>
@@ -89,13 +88,14 @@
     </div>
 	</div>
 	<c:if test ="${sessionScope.cartproducts != null}">
+	 	<c:set var = "productquantity" value ="${sessionScope.productsquantity}"/>
+		<c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
+		<c:set var = "order_id" value ="${sessionScope.order_id}"/>
     <div id="cart-popup" class="cart-popup" hidden>    
         <div class="cart-header">
             <h2>Seu carrinho</h2>
             <button onclick="closePopup()" class="close-cart-btn">×</button>
         </div>
-        
-		<c:set var = "cartproducts" value ="${sessionScope.cartproducts}"/>
 		<div class="cart-table-container">
         <table id="cart-items">
           	<thead>
